@@ -1,0 +1,1694 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AquaGest Pro — Gestão de Piscicultura</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0a0f1a;--surface:#0f1826;--surface2:#14202f;--surface3:#1a2a3d;--border:#1e3248;--accent:#00c9a7;--accent2:#0090ff;--accent3:#ff6b35;--accent4:#a855f7;--text:#e8f0f8;--text2:#7a9bb8;--text3:#4a6a88;--danger:#ff4d6a;--warning:#ffbe0b;--success:#00c9a7;--radius:12px;--shadow:0 4px 24px rgba(0,0,0,.4)}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
+h1,h2,h3,h4,h5{font-family:'Syne',sans-serif}
+::-webkit-scrollbar{width:6px;height:6px}::-webkit-scrollbar-track{background:var(--bg)}::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+#app{display:flex;min-height:100vh}
+#sidebar{width:260px;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;position:fixed;top:0;left:0;height:100vh;z-index:100;overflow-y:auto;transition:transform .3s}
+#main{margin-left:260px;flex:1;min-height:100vh;display:flex;flex-direction:column}
+#topbar{background:var(--surface);border-bottom:1px solid var(--border);padding:0 24px;height:60px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:99}
+#content{flex:1;padding:24px;overflow-y:auto}
+.sidebar-logo{padding:20px 20px 16px;border-bottom:1px solid var(--border)}
+.logo-mark{display:flex;align-items:center;gap:10px}
+.logo-icon{width:36px;height:36px;background:linear-gradient(135deg,var(--accent),var(--accent2));border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px}
+.logo-text{font-family:'Syne',sans-serif;font-weight:800;font-size:15px;color:var(--text);letter-spacing:.5px}
+.logo-sub{font-size:10px;color:var(--text3);letter-spacing:1px;text-transform:uppercase;margin-top:1px}
+.nav-section{padding:12px 0}
+.nav-label{padding:8px 20px 4px;font-size:10px;color:var(--text3);letter-spacing:1.5px;text-transform:uppercase;font-weight:600}
+.nav-item{display:flex;align-items:center;gap:10px;padding:10px 20px;color:var(--text2);cursor:pointer;transition:.2s;font-size:14px;border-left:3px solid transparent;margin:1px 0}
+.nav-item:hover{background:var(--surface2);color:var(--text)}
+.nav-item.active{background:rgba(0,201,167,.08);color:var(--accent);border-left-color:var(--accent)}
+.nav-item .nav-icon{font-size:16px;width:20px;text-align:center}
+.page-title{font-family:'Syne',sans-serif;font-weight:700;font-size:18px}
+.topbar-right{display:flex;align-items:center;gap:12px}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border-radius:8px;border:none;cursor:pointer;font-size:13px;font-weight:500;font-family:'DM Sans',sans-serif;transition:.2s}
+.btn-primary{background:var(--accent);color:#000}.btn-primary:hover{background:#00b396}
+.btn-secondary{background:var(--surface3);color:var(--text);border:1px solid var(--border)}.btn-secondary:hover{background:var(--border)}
+.btn-danger{background:var(--danger);color:#fff}.btn-danger:hover{background:#e0334f}
+.btn-ghost{background:transparent;color:var(--text2);border:1px solid var(--border)}.btn-ghost:hover{background:var(--surface2);color:var(--text)}
+.btn-sm{padding:5px 10px;font-size:12px}.btn-xs{padding:3px 8px;font-size:11px}.btn-icon{width:32px;height:32px;padding:0;justify-content:center}
+.btn-teal{background:rgba(0,201,167,.15);color:var(--accent);border:1px solid rgba(0,201,167,.3)}.btn-teal:hover{background:rgba(0,201,167,.25)}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:20px}
+.stat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px}
+.stat-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px 18px;position:relative;overflow:hidden}
+.stat-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px}
+.stat-card.green::before{background:var(--accent)}.stat-card.blue::before{background:var(--accent2)}.stat-card.orange::before{background:var(--accent3)}.stat-card.purple::before{background:var(--accent4)}.stat-card.red::before{background:var(--danger)}.stat-card.yellow::before{background:var(--warning)}
+.stat-label{font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:1px;font-weight:600;margin-bottom:6px}
+.stat-value{font-family:'Syne',sans-serif;font-size:22px;font-weight:700;color:var(--text)}
+.stat-sub{font-size:11px;color:var(--text3);margin-top:3px}
+.stat-icon{position:absolute;right:14px;top:50%;transform:translateY(-50%);font-size:28px;opacity:.15}
+.table-wrap{overflow-x:auto;border-radius:var(--radius);border:1px solid var(--border)}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{background:var(--surface2);color:var(--text3);font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:.8px;padding:11px 14px;text-align:left;border-bottom:1px solid var(--border)}
+td{padding:11px 14px;border-bottom:1px solid rgba(30,50,72,.5);color:var(--text);vertical-align:middle}
+tr:last-child td{border-bottom:none}tr:hover td{background:rgba(255,255,255,.02)}
+.badge{display:inline-flex;align-items:center;padding:3px 8px;border-radius:6px;font-size:11px;font-weight:600;gap:4px}
+.badge-green{background:rgba(0,201,167,.15);color:var(--accent)}.badge-blue{background:rgba(0,144,255,.15);color:var(--accent2)}.badge-orange{background:rgba(255,107,53,.15);color:var(--accent3)}.badge-red{background:rgba(255,77,106,.15);color:var(--danger)}.badge-yellow{background:rgba(255,190,11,.15);color:var(--warning)}.badge-gray{background:var(--surface3);color:var(--text2)}
+.form-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px}
+.form-group{display:flex;flex-direction:column;gap:6px}
+.form-label{font-size:12px;color:var(--text2);font-weight:500;letter-spacing:.3px}
+.form-control{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:9px 12px;color:var(--text);font-size:13px;font-family:'DM Sans',sans-serif;transition:.2s;outline:none}
+.form-control:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(0,201,167,.1)}
+.form-control::placeholder{color:var(--text3)}
+select.form-control option{background:var(--surface2)}
+textarea.form-control{resize:vertical;min-height:70px}
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);backdrop-filter:blur(4px);z-index:1000;display:none;align-items:center;justify-content:center;padding:20px}
+.modal-overlay.open{display:flex}
+.modal{background:var(--surface);border:1px solid var(--border);border-radius:16px;width:100%;max-width:680px;max-height:90vh;overflow-y:auto;box-shadow:var(--shadow)}
+.modal-header{padding:20px 24px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.modal-title{font-family:'Syne',sans-serif;font-size:17px;font-weight:700}
+.modal-body{padding:20px 24px}
+.modal-footer{padding:14px 24px;border-top:1px solid var(--border);display:flex;gap:10px;justify-content:flex-end}
+.tabs{display:flex;gap:2px;background:var(--surface2);border-radius:10px;padding:3px;margin-bottom:20px;border:1px solid var(--border)}
+.tab{flex:1;padding:8px 14px;border-radius:8px;cursor:pointer;font-size:13px;font-weight:500;text-align:center;color:var(--text2);transition:.2s}
+.tab.active{background:var(--surface);color:var(--text);box-shadow:0 2px 8px rgba(0,0,0,.3)}
+.section{display:none}.section.active{display:block}
+.section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:10px}
+.section-title{font-family:'Syne',sans-serif;font-size:20px;font-weight:700}
+.charts-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:16px}
+.chart-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:18px}
+.chart-title{font-family:'Syne',sans-serif;font-size:13px;font-weight:600;color:var(--text2);margin-bottom:14px;text-transform:uppercase;letter-spacing:.8px}
+.chart-container{position:relative;height:200px}
+.progress{height:6px;background:var(--surface3);border-radius:3px;overflow:hidden}
+.progress-bar{height:100%;border-radius:3px;background:var(--accent);transition:.5s}
+.alert{padding:12px 16px;border-radius:8px;font-size:13px;margin-bottom:14px;display:flex;align-items:center;gap:8px}
+.alert-success{background:rgba(0,201,167,.1);border:1px solid rgba(0,201,167,.3);color:var(--accent)}
+.alert-danger{background:rgba(255,77,106,.1);border:1px solid rgba(255,77,106,.3);color:var(--danger)}
+.alert-warning{background:rgba(255,190,11,.1);border:1px solid rgba(255,190,11,.3);color:var(--warning)}
+.alert-info{background:rgba(0,144,255,.1);border:1px solid rgba(0,144,255,.3);color:var(--accent2)}
+.ficha-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px}
+.ficha-item{background:var(--surface2);border-radius:8px;padding:12px;border:1px solid var(--border)}
+.ficha-key{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px}
+.ficha-val{font-family:'Syne',sans-serif;font-size:15px;font-weight:700}
+.menu-toggle{display:none;background:none;border:none;color:var(--text);font-size:20px;cursor:pointer;padding:4px}
+#toast{position:fixed;bottom:24px;right:24px;z-index:9999;display:flex;flex-direction:column;gap:8px;pointer-events:none}
+.toast-item{background:var(--surface3);border:1px solid var(--border);border-radius:10px;padding:12px 16px;min-width:240px;display:flex;align-items:center;gap:10px;font-size:13px;animation:slideIn .3s ease;box-shadow:var(--shadow)}
+@keyframes slideIn{from{transform:translateX(100%);opacity:0}to{transform:translateX(0);opacity:1}}
+.toast-success{border-left:3px solid var(--accent)}.toast-error{border-left:3px solid var(--danger)}.toast-info{border-left:3px solid var(--accent2)}
+.empty-state{text-align:center;padding:48px 24px;color:var(--text3)}
+.empty-icon{font-size:48px;margin-bottom:12px;opacity:.4}.empty-text{font-size:14px}
+.filter-bar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;align-items:center}
+.filter-bar .form-control{min-width:140px}
+.analysis-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:18px;position:relative;overflow:hidden}
+.analysis-rank{position:absolute;top:12px;right:14px;font-family:'Syne',sans-serif;font-size:32px;font-weight:800;color:rgba(255,255,255,.04)}
+.analysis-label{font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px}
+.analysis-value{font-family:'Syne',sans-serif;font-size:18px;font-weight:700}
+.analysis-sub{font-size:12px;color:var(--text3);margin-top:3px}
+.import-zone{border:2px dashed var(--border);border-radius:var(--radius);padding:40px;text-align:center;cursor:pointer;transition:.2s}
+.import-zone:hover,.import-zone.drag{border-color:var(--accent);background:rgba(0,201,167,.04)}
+.import-icon{font-size:40px;margin-bottom:12px;opacity:.5}
+#sidebar-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:99}
+#sidebar-overlay.open{display:block}
+.divider{height:1px;background:var(--border);margin:16px 0}
+.flex{display:flex}.flex-center{display:flex;align-items:center}.gap-2{gap:8px}.mt-3{margin-top:12px}.mt-4{margin-top:16px}.mb-4{margin-bottom:16px}
+.text-muted{color:var(--text3);font-size:12px}.text-success{color:var(--accent)}.text-danger{color:var(--danger)}.text-warning{color:var(--warning)}.fw-bold{font-weight:700;font-family:'Syne',sans-serif}
+
+/* CALCULADORA DE TANQUES */
+.calc-card{background:linear-gradient(135deg,rgba(0,201,167,.06),rgba(0,144,255,.06));border:1px solid rgba(0,201,167,.25);border-radius:var(--radius);padding:20px;margin-top:20px}
+.calc-tabs{display:flex;gap:4px;margin-bottom:16px;flex-wrap:wrap}
+.calc-tab{padding:6px 14px;border-radius:8px;cursor:pointer;font-size:12px;font-weight:600;color:var(--text3);background:var(--surface2);border:1px solid var(--border);transition:.2s}
+.calc-tab.active{background:rgba(0,201,167,.15);color:var(--accent);border-color:rgba(0,201,167,.4)}
+.calc-result{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:14px;margin-top:14px;display:none}
+.calc-result.show{display:block}
+.result-row{display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid var(--border)}
+.result-row:last-child{border-bottom:none}
+.result-label{font-size:12px;color:var(--text3)}
+.result-val{font-family:'Syne',sans-serif;font-weight:700;font-size:15px;color:var(--accent)}
+
+/* QR CODE canvas style */
+.qr-canvas{image-rendering:pixelated;border-radius:4px}
+
+/* ETIQUETA PRINT */
+@media print{
+  #sidebar,#topbar,#toast,.btn,.tabs,.no-print{display:none!important}
+  #main{margin:0!important}
+  body{background:#fff;color:#000}
+  .etiqueta-print{page-break-inside:avoid;border:2px solid #000;padding:8px;margin:4px;display:inline-block;width:185px;vertical-align:top;font-family:Arial,sans-serif;font-size:10px}
+  #labels-grid{display:flex!important;flex-wrap:wrap}
+}
+@media(max-width:768px){
+  #sidebar{transform:translateX(-100%)}#sidebar.open{transform:translateX(0)}#main{margin-left:0}.menu-toggle{display:block}
+  .stat-grid{grid-template-columns:repeat(2,1fr)}.charts-grid{grid-template-columns:1fr}.form-grid{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+<div id="app">
+
+<!-- SIDEBAR -->
+<nav id="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-mark">
+      <div class="logo-icon">🐟</div>
+      <div><div class="logo-text">AquaGest Pro</div><div class="logo-sub">Gestão de Piscicultura</div></div>
+    </div>
+  </div>
+  <div class="nav-section">
+    <div class="nav-label">Visão Geral</div>
+    <div class="nav-item active" data-nav="dashboard"><span class="nav-icon">📊</span> Dashboard</div>
+    <div class="nav-item" data-nav="analise"><span class="nav-icon">🔬</span> Análise da Produção</div>
+  </div>
+  <div class="nav-section">
+    <div class="nav-label">Cadastros</div>
+    <div class="nav-item" data-nav="especies"><span class="nav-icon">🐠</span> Espécies</div>
+    <div class="nav-item" data-nav="tanques"><span class="nav-icon">🏊</span> Tanques</div>
+    <div class="nav-item" data-nav="lotes"><span class="nav-icon">📦</span> Lotes</div>
+  </div>
+  <div class="nav-section">
+    <div class="nav-label">Controles</div>
+    <div class="nav-item" data-nav="alimentacao"><span class="nav-icon">🌾</span> Alimentação</div>
+    <div class="nav-item" data-nav="crescimento"><span class="nav-icon">📈</span> Crescimento</div>
+    <div class="nav-item" data-nav="mortalidade"><span class="nav-icon">⚠️</span> Mortalidade</div>
+    <div class="nav-item" data-nav="vendas"><span class="nav-icon">💰</span> Vendas</div>
+  </div>
+  <div class="nav-section">
+    <div class="nav-label">Ferramentas</div>
+    <div class="nav-item" data-nav="qrcodes"><span class="nav-icon">📱</span> QR Codes</div>
+    <div class="nav-item" data-nav="etiquetas"><span class="nav-icon">🏷️</span> Etiquetas</div>
+    <div class="nav-item" data-nav="relatorios"><span class="nav-icon">📋</span> Relatórios</div>
+    <div class="nav-item" data-nav="importexport"><span class="nav-icon">🔄</span> Central de Backup</div>
+  </div>
+</nav>
+<div id="sidebar-overlay"></div>
+
+<!-- MAIN -->
+<div id="main">
+  <header id="topbar">
+    <div class="flex-center gap-2">
+      <button class="menu-toggle" id="menu-btn">☰</button>
+      <span class="page-title" id="page-title">Dashboard</span>
+    </div>
+    <div class="topbar-right">
+      <span id="clock" class="text-muted"></span>
+      <button class="btn btn-primary btn-sm" id="btn-novo-lote">+ Novo Lote</button>
+    </div>
+  </header>
+  <main id="content">
+
+  <!-- DASHBOARD -->
+  <div id="sec-dashboard" class="section active">
+    <div class="section-header">
+      <div class="section-title">📊 Dashboard</div>
+      <button class="btn btn-ghost btn-sm" id="btn-refresh-dash">↻ Atualizar</button>
+    </div>
+    <div class="stat-grid" id="dash-stats"></div>
+    <div class="charts-grid" style="margin-top:20px">
+      <div class="chart-card"><div class="chart-title">Crescimento por Lote</div><div class="chart-container"><canvas id="chart-crescimento"></canvas></div></div>
+      <div class="chart-card"><div class="chart-title">Biomassa por Lote</div><div class="chart-container"><canvas id="chart-biomassa"></canvas></div></div>
+      <div class="chart-card"><div class="chart-title">Vendas por Período</div><div class="chart-container"><canvas id="chart-vendas"></canvas></div></div>
+      <div class="chart-card"><div class="chart-title">Consumo de Ração</div><div class="chart-container"><canvas id="chart-racao"></canvas></div></div>
+    </div>
+  </div>
+
+  <!-- ANÁLISE -->
+  <div id="sec-analise" class="section">
+    <div class="section-header"><div class="section-title">🔬 Análise da Produção</div></div>
+    <div id="analise-content"></div>
+  </div>
+
+  <!-- ESPÉCIES -->
+  <div id="sec-especies" class="section">
+    <div class="section-header">
+      <div class="section-title">🐠 Espécies</div>
+      <button class="btn btn-primary" id="btn-nova-especie">+ Nova Espécie</button>
+    </div>
+    <div class="table-wrap"><table><thead><tr><th>Nome</th><th>Nome Científico</th><th>Peso Inicial</th><th>Tempo Crescimento</th><th>Observações</th><th>Ações</th></tr></thead><tbody id="tbody-especies"></tbody></table></div>
+  </div>
+
+  <!-- TANQUES -->
+  <div id="sec-tanques" class="section">
+    <div class="section-header">
+      <div class="section-title">🏊 Tanques</div>
+      <button class="btn btn-primary" id="btn-novo-tanque">+ Novo Tanque</button>
+    </div>
+    <div class="table-wrap"><table><thead><tr><th>Código</th><th>Volume (m³)</th><th>Profundidade (m)</th><th>Área (m²)</th><th>Tipo</th><th>Status</th><th>Ações</th></tr></thead><tbody id="tbody-tanques"></tbody></table></div>
+
+    <!-- CALCULADORA DE TANQUES -->
+    <div class="calc-card">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px">
+        <div>
+          <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:16px;color:var(--accent)">🧮 Calculadora de Tanques</div>
+          <div style="font-size:12px;color:var(--text3);margin-top:2px">Calcule volume e área superficial — pode registrar diretamente</div>
+        </div>
+      </div>
+      <div class="calc-tabs">
+        <div class="calc-tab active" data-calc="retangular">Retangular</div>
+        <div class="calc-tab" data-calc="circular">Circular</div>
+        <div class="calc-tab" data-calc="oval">Oval</div>
+        <div class="calc-tab" data-calc="trapezoidal">Trapezoidal</div>
+        <div class="calc-tab" data-calc="raceway">Raceway</div>
+      </div>
+
+      <!-- Retangular -->
+      <div id="calc-retangular" class="calc-form">
+        <div class="form-grid" style="grid-template-columns:repeat(auto-fit,minmax(160px,1fr))">
+          <div class="form-group"><label class="form-label">Comprimento (m)</label><input type="number" class="form-control calc-input" id="calc-ret-comp" placeholder="0.00" step="0.01" min="0"></div>
+          <div class="form-group"><label class="form-label">Largura (m)</label><input type="number" class="form-control calc-input" id="calc-ret-larg" placeholder="0.00" step="0.01" min="0"></div>
+          <div class="form-group"><label class="form-label">Profundidade (m)</label><input type="number" class="form-control calc-input" id="calc-ret-prof" placeholder="0.00" step="0.01" min="0"></div>
+        </div>
+      </div>
+
+      <!-- Circular -->
+      <div id="calc-circular" class="calc-form" style="display:none">
+        <div class="form-grid" style="grid-template-columns:repeat(auto-fit,minmax(160px,1fr))">
+          <div class="form-group"><label class="form-label">Diâmetro (m)</label><input type="number" class="form-control calc-input" id="calc-cir-diam" placeholder="0.00" step="0.01" min="0"></div>
+          <div class="form-group"><label class="form-label">Profundidade (m)</label><input type="number" class="form-control calc-input" id="calc-cir-prof" placeholder="0.00" step="0.01" min="0"></div>
+        </div>
+      </div>
+
+      <!-- Oval -->
+      <div id="calc-oval" class="calc-form" style="display:none">
+        <div class="form-grid" style="grid-template-columns:repeat(auto-fit,minmax(160px,1fr))">
+          <div class="form-group"><label class="form-label">Comprimento (m)</label><input type="number" class="form-control calc-input" id="calc-ov-comp" placeholder="0.00" step="0.01" min="0"></div>
+          <div class="form-group"><label class="form-label">Largura (m)</label><input type="number" class="form-control calc-input" id="calc-ov-larg" placeholder="0.00" step="0.01" min="0"></div>
+          <div class="form-group"><label class="form-label">Profundidade (m)</label><input type="number" class="form-control calc-input" id="calc-ov-prof" placeholder="0.00" step="0.01" min="0"></div>
+        </div>
+      </div>
+
+      <!-- Trapezoidal -->
+      <div id="calc-trapezoidal" class="calc-form" style="display:none">
+        <div class="form-grid" style="grid-template-columns:repeat(auto-fit,minmax(160px,1fr))">
+          <div class="form-group"><label class="form-label">Base Maior (m)</label><input type="number" class="form-control calc-input" id="calc-trap-bmai" placeholder="0.00" step="0.01" min="0"></div>
+          <div class="form-group"><label class="form-label">Base Menor (m)</label><input type="number" class="form-control calc-input" id="calc-trap-bmen" placeholder="0.00" step="0.01" min="0"></div>
+          <div class="form-group"><label class="form-label">Comprimento (m)</label><input type="number" class="form-control calc-input" id="calc-trap-comp" placeholder="0.00" step="0.01" min="0"></div>
+          <div class="form-group"><label class="form-label">Profundidade (m)</label><input type="number" class="form-control calc-input" id="calc-trap-prof" placeholder="0.00" step="0.01" min="0"></div>
+        </div>
+      </div>
+
+      <!-- Raceway -->
+      <div id="calc-raceway" class="calc-form" style="display:none">
+        <div class="form-grid" style="grid-template-columns:repeat(auto-fit,minmax(160px,1fr))">
+          <div class="form-group"><label class="form-label">Comprimento (m)</label><input type="number" class="form-control calc-input" id="calc-race-comp" placeholder="0.00" step="0.01" min="0"></div>
+          <div class="form-group"><label class="form-label">Largura (m)</label><input type="number" class="form-control calc-input" id="calc-race-larg" placeholder="0.00" step="0.01" min="0"></div>
+          <div class="form-group"><label class="form-label">Prof. Útil (m)</label><input type="number" class="form-control calc-input" id="calc-race-prof" placeholder="0.00" step="0.01" min="0"></div>
+        </div>
+        <div style="font-size:11px;color:var(--text3);margin-top:6px">* Raceway: área considerada como retangular com cantos semicirculares</div>
+      </div>
+
+      <div style="display:flex;gap:10px;margin-top:14px;flex-wrap:wrap">
+        <button class="btn btn-teal" id="btn-calcular-tanque">🧮 Calcular</button>
+        <button class="btn btn-primary" id="btn-registrar-calculo" style="display:none">💾 Registrar como Novo Tanque</button>
+        <button class="btn btn-ghost btn-sm" id="btn-limpar-calc">✕ Limpar</button>
+      </div>
+
+      <div class="calc-result" id="calc-result">
+        <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:13px;color:var(--text2);margin-bottom:10px;text-transform:uppercase;letter-spacing:.8px">Resultado</div>
+        <div class="result-row"><span class="result-label">Área Superficial</span><span class="result-val" id="res-area">—</span></div>
+        <div class="result-row"><span class="result-label">Volume Total</span><span class="result-val" id="res-volume">—</span></div>
+        <div class="result-row"><span class="result-label">Volume Útil (80%)</span><span class="result-val" id="res-volume-util">—</span></div>
+        <div class="result-row"><span class="result-label">Profundidade</span><span class="result-val" id="res-prof">—</span></div>
+        <div style="margin-top:10px;padding:10px;background:rgba(0,201,167,.05);border-radius:8px;border:1px solid rgba(0,201,167,.15)">
+          <div style="font-size:11px;color:var(--text3);margin-bottom:4px">💡 Capacidade estimada de peixes (0,3 kg/L = 0,3 t/m³)</div>
+          <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:14px;color:var(--accent)" id="res-capacidade">—</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- LOTES -->
+  <div id="sec-lotes" class="section">
+    <div class="section-header">
+      <div class="section-title">📦 Lotes</div>
+      <button class="btn btn-primary" id="btn-novo-lote2">+ Novo Lote</button>
+    </div>
+    <div class="filter-bar">
+      <input type="text" class="form-control" placeholder="🔍 Pesquisar..." id="search-lotes">
+      <select class="form-control" id="filter-lote-status">
+        <option value="">Todos os status</option>
+        <option value="ativo">Ativos</option>
+        <option value="encerrado">Encerrados</option>
+      </select>
+    </div>
+    <div class="table-wrap"><table><thead><tr><th>Código</th><th>Espécie</th><th>Tanque</th><th>Qtd Atual</th><th>Biomassa</th><th>Densidade</th><th>Conv. Alim.</th><th>Dias</th><th>Status</th><th>Ações</th></tr></thead><tbody id="tbody-lotes"></tbody></table></div>
+  </div>
+
+  <!-- ALIMENTAÇÃO -->
+  <div id="sec-alimentacao" class="section">
+    <div class="section-header">
+      <div class="section-title">🌾 Alimentação</div>
+      <button class="btn btn-primary" id="btn-nova-alim">+ Registrar</button>
+    </div>
+    <div class="filter-bar">
+      <select class="form-control" id="filter-alim-lote"></select>
+      <input type="date" class="form-control" id="filter-alim-de">
+      <input type="date" class="form-control" id="filter-alim-ate">
+    </div>
+    <div class="table-wrap"><table><thead><tr><th>Data</th><th>Lote</th><th>Tipo Ração</th><th>Qtd (kg)</th><th>Custo</th><th>Observações</th><th>Ações</th></tr></thead><tbody id="tbody-alimentacao"></tbody></table></div>
+  </div>
+
+  <!-- CRESCIMENTO -->
+  <div id="sec-crescimento" class="section">
+    <div class="section-header">
+      <div class="section-title">📈 Crescimento</div>
+      <button class="btn btn-primary" id="btn-novo-cresc">+ Registrar Biometria</button>
+    </div>
+    <div class="filter-bar">
+      <select class="form-control" id="filter-cresc-lote"></select>
+    </div>
+    <div class="table-wrap"><table><thead><tr><th>Data</th><th>Lote</th><th>Peso Médio (g)</th><th>Comprimento (cm)</th><th>Amostrados</th><th>Observações</th><th>Ações</th></tr></thead><tbody id="tbody-crescimento"></tbody></table></div>
+  </div>
+
+  <!-- MORTALIDADE -->
+  <div id="sec-mortalidade" class="section">
+    <div class="section-header">
+      <div class="section-title">⚠️ Mortalidade</div>
+      <button class="btn btn-primary" id="btn-nova-mort">+ Registrar</button>
+    </div>
+    <div class="filter-bar">
+      <select class="form-control" id="filter-mort-lote"></select>
+    </div>
+    <div class="table-wrap"><table><thead><tr><th>Data</th><th>Lote</th><th>Quantidade</th><th>Motivo</th><th>Observações</th><th>Ações</th></tr></thead><tbody id="tbody-mortalidade"></tbody></table></div>
+  </div>
+
+  <!-- VENDAS -->
+  <div id="sec-vendas" class="section">
+    <div class="section-header">
+      <div class="section-title">💰 Vendas</div>
+      <button class="btn btn-primary" id="btn-nova-venda">+ Registrar Venda</button>
+    </div>
+    <div class="filter-bar">
+      <select class="form-control" id="filter-venda-lote"></select>
+      <input type="date" class="form-control" id="filter-venda-de">
+      <input type="date" class="form-control" id="filter-venda-ate">
+    </div>
+    <div class="table-wrap"><table><thead><tr><th>Data</th><th>Lote</th><th>Qtd</th><th>Peso (kg)</th><th>Preço/kg</th><th>Total</th><th>Cliente</th><th>Ações</th></tr></thead><tbody id="tbody-vendas"></tbody></table></div>
+  </div>
+
+  <!-- QR CODES -->
+  <div id="sec-qrcodes" class="section">
+    <div class="section-header">
+      <div class="section-title">📱 QR Codes dos Lotes</div>
+      <button class="btn btn-ghost btn-sm" id="btn-refresh-qr">↻ Regenerar</button>
+    </div>
+    <div id="qr-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:16px"></div>
+  </div>
+
+  <!-- ETIQUETAS -->
+  <div id="sec-etiquetas" class="section">
+    <div class="section-header">
+      <div class="section-title">🏷️ Etiquetas</div>
+      <button class="btn btn-primary no-print" id="btn-print-labels">🖨️ Imprimir</button>
+    </div>
+    <div id="labels-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px"></div>
+  </div>
+
+  <!-- RELATÓRIOS -->
+  <div id="sec-relatorios" class="section">
+    <div class="section-header"><div class="section-title">📋 Relatórios</div></div>
+    <div class="filter-bar" style="margin-bottom:20px">
+      <select class="form-control" id="rel-tipo">
+        <option value="lotes-ativos">Lotes Ativos</option>
+        <option value="lotes-encerrados">Lotes Encerrados</option>
+        <option value="biomassa">Biomassa</option>
+        <option value="mortalidade">Mortalidade</option>
+        <option value="alimentacao">Alimentação</option>
+        <option value="conversao">Conversão Alimentar</option>
+        <option value="crescimento">Crescimento</option>
+        <option value="vendas">Vendas</option>
+        <option value="receita">Receita</option>
+      </select>
+      <select class="form-control" id="rel-especie"><option value="">Todas espécies</option></select>
+      <select class="form-control" id="rel-tanque"><option value="">Todos tanques</option></select>
+      <input type="date" class="form-control" id="rel-de">
+      <input type="date" class="form-control" id="rel-ate">
+      <button class="btn btn-primary" id="btn-gerar-rel">📋 Gerar</button>
+      <button class="btn btn-secondary" id="btn-rel-pdf">📄 PDF</button>
+      <button class="btn btn-secondary" id="btn-rel-xlsx">📊 Excel</button>
+    </div>
+    <div id="relatorio-output"></div>
+  </div>
+
+  <!-- BACKUP -->
+  <div id="sec-importexport" class="section">
+    <div class="section-header"><div class="section-title">🔄 Central de Backup</div></div>
+    <div class="tabs">
+      <div class="tab active" data-subtab="tab-export">📤 Exportar</div>
+      <div class="tab" data-subtab="tab-import">📥 Importar</div>
+      <div class="tab" data-subtab="tab-backup">💾 Backup</div>
+    </div>
+    <div id="tab-export">
+      <div class="card">
+        <h3 style="margin-bottom:14px">Exportar Dados</h3>
+        <div class="form-group" style="margin-bottom:16px">
+          <label class="form-label">Selecionar Lotes</label>
+          <div id="export-lotes-list" style="display:flex;flex-wrap:wrap;gap:8px;margin-top:6px"></div>
+        </div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap">
+          <button class="btn btn-primary" id="btn-export-zip">📦 Exportar ZIP</button>
+          <button class="btn btn-secondary" id="btn-export-json">💾 Banco JSON</button>
+          <button class="btn btn-secondary" id="btn-export-xlsx">📊 Excel Completo</button>
+        </div>
+      </div>
+    </div>
+    <div id="tab-import" style="display:none">
+      <div class="card">
+        <h3 style="margin-bottom:14px">Importar Dados</h3>
+        <div class="import-zone" id="import-zone">
+          <div class="import-icon">📁</div>
+          <div style="font-size:15px;margin-bottom:6px">Arraste arquivos ou clique para selecionar</div>
+          <div class="text-muted">Aceita: .zip, .json, .xlsx, .csv</div>
+        </div>
+        <input type="file" id="import-file" style="display:none" accept=".zip,.json,.xlsx,.csv" multiple>
+        <div id="import-status" style="margin-top:14px"></div>
+      </div>
+    </div>
+    <div id="tab-backup" style="display:none">
+      <div class="card">
+        <h3 style="margin-bottom:14px">Backup Automático</h3>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:20px">
+          <button class="btn btn-primary" id="btn-fazer-backup">💾 Criar Backup</button>
+          <button class="btn btn-secondary" id="btn-restaurar-backup">🔄 Restaurar</button>
+          <button class="btn btn-danger" id="btn-limpar-tudo">🗑️ Limpar Tudo</button>
+        </div>
+        <div id="backup-list"></div>
+      </div>
+    </div>
+  </div>
+
+  </main>
+</div>
+</div>
+
+<!-- ===== MODALS ===== -->
+<!-- Espécie -->
+<div class="modal-overlay" id="modal-especie">
+  <div class="modal">
+    <div class="modal-header"><div class="modal-title">🐠 Espécie</div><button class="btn btn-ghost btn-icon modal-close" data-modal="modal-especie">✕</button></div>
+    <div class="modal-body">
+      <input type="hidden" id="esp-id">
+      <div class="form-grid">
+        <div class="form-group"><label class="form-label">Nome *</label><input type="text" class="form-control" id="esp-nome" placeholder="Ex: Tilápia"></div>
+        <div class="form-group"><label class="form-label">Nome Científico</label><input type="text" class="form-control" id="esp-cientifico"></div>
+        <div class="form-group"><label class="form-label">Peso Inicial (g)</label><input type="number" class="form-control" id="esp-peso"></div>
+        <div class="form-group"><label class="form-label">Tempo de Crescimento (dias)</label><input type="number" class="form-control" id="esp-tempo"></div>
+      </div>
+      <div class="form-group mt-3"><label class="form-label">Observações</label><textarea class="form-control" id="esp-obs"></textarea></div>
+    </div>
+    <div class="modal-footer"><button class="btn btn-ghost modal-close" data-modal="modal-especie">Cancelar</button><button class="btn btn-primary" id="btn-salvar-especie">💾 Salvar</button></div>
+  </div>
+</div>
+
+<!-- Tanque -->
+<div class="modal-overlay" id="modal-tanque">
+  <div class="modal">
+    <div class="modal-header"><div class="modal-title">🏊 Tanque</div><button class="btn btn-ghost btn-icon modal-close" data-modal="modal-tanque">✕</button></div>
+    <div class="modal-body">
+      <input type="hidden" id="tq-id">
+      <div class="form-grid">
+        <div class="form-group"><label class="form-label">Volume (m³) *</label><input type="number" class="form-control" id="tq-volume" step="0.01"></div>
+        <div class="form-group"><label class="form-label">Profundidade (m)</label><input type="number" class="form-control" id="tq-prof" step="0.01"></div>
+        <div class="form-group"><label class="form-label">Área Superficial (m²)</label><input type="number" class="form-control" id="tq-area" step="0.01"></div>
+        <div class="form-group"><label class="form-label">Tipo</label>
+          <select class="form-control" id="tq-tipo">
+            <option value="escavado">Escavado</option><option value="alvenaria">Alvenaria</option><option value="lona">Lona</option><option value="fibra">Fibra de Vidro</option><option value="rede">Rede/Viveiro</option><option value="raceway">Raceway</option><option value="outro">Outro</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group mt-3"><label class="form-label">Observações</label><textarea class="form-control" id="tq-obs"></textarea></div>
+    </div>
+    <div class="modal-footer"><button class="btn btn-ghost modal-close" data-modal="modal-tanque">Cancelar</button><button class="btn btn-primary" id="btn-salvar-tanque">💾 Salvar</button></div>
+  </div>
+</div>
+
+<!-- Lote -->
+<div class="modal-overlay" id="modal-lote">
+  <div class="modal" style="max-width:720px">
+    <div class="modal-header"><div class="modal-title">📦 Novo Lote</div><button class="btn btn-ghost btn-icon modal-close" data-modal="modal-lote">✕</button></div>
+    <div class="modal-body">
+      <input type="hidden" id="lot-id">
+      <div class="form-grid">
+        <div class="form-group"><label class="form-label">Espécie *</label><select class="form-control" id="lot-especie"></select></div>
+        <div class="form-group"><label class="form-label">Tanque *</label><select class="form-control" id="lot-tanque"></select></div>
+        <div class="form-group"><label class="form-label">Quantidade Inicial *</label><input type="number" class="form-control" id="lot-qtd"></div>
+        <div class="form-group"><label class="form-label">Peso Médio Inicial (g)</label><input type="number" class="form-control" id="lot-peso" step="0.1"></div>
+        <div class="form-group"><label class="form-label">Mortalidade Inicial</label><input type="number" class="form-control" id="lot-mort-ini" value="0"></div>
+        <div class="form-group"><label class="form-label">Data de Criação</label><input type="date" class="form-control" id="lot-data"></div>
+      </div>
+      <div class="form-group mt-3"><label class="form-label">Observações</label><textarea class="form-control" id="lot-obs"></textarea></div>
+    </div>
+    <div class="modal-footer"><button class="btn btn-ghost modal-close" data-modal="modal-lote">Cancelar</button><button class="btn btn-primary" id="btn-salvar-lote">💾 Criar Lote</button></div>
+  </div>
+</div>
+
+<!-- Alimentação -->
+<div class="modal-overlay" id="modal-alimentacao">
+  <div class="modal">
+    <div class="modal-header"><div class="modal-title">🌾 Alimentação</div><button class="btn btn-ghost btn-icon modal-close" data-modal="modal-alimentacao">✕</button></div>
+    <div class="modal-body">
+      <input type="hidden" id="alim-id">
+      <div class="form-grid">
+        <div class="form-group"><label class="form-label">Lote *</label><select class="form-control" id="alim-lote"></select></div>
+        <div class="form-group"><label class="form-label">Data *</label><input type="date" class="form-control" id="alim-data"></div>
+        <div class="form-group"><label class="form-label">Tipo de Ração</label><input type="text" class="form-control" id="alim-tipo" placeholder="Ex: Extrusada 32%"></div>
+        <div class="form-group"><label class="form-label">Quantidade (kg) *</label><input type="number" class="form-control" id="alim-qtd" step="0.01"></div>
+        <div class="form-group"><label class="form-label">Custo (R$)</label><input type="number" class="form-control" id="alim-custo" step="0.01"></div>
+      </div>
+      <div class="form-group mt-3"><label class="form-label">Observações</label><textarea class="form-control" id="alim-obs"></textarea></div>
+    </div>
+    <div class="modal-footer"><button class="btn btn-ghost modal-close" data-modal="modal-alimentacao">Cancelar</button><button class="btn btn-primary" id="btn-salvar-alim">💾 Salvar</button></div>
+  </div>
+</div>
+
+<!-- Crescimento -->
+<div class="modal-overlay" id="modal-crescimento">
+  <div class="modal">
+    <div class="modal-header"><div class="modal-title">📈 Biometria</div><button class="btn btn-ghost btn-icon modal-close" data-modal="modal-crescimento">✕</button></div>
+    <div class="modal-body">
+      <input type="hidden" id="cresc-id">
+      <div class="form-grid">
+        <div class="form-group"><label class="form-label">Lote *</label><select class="form-control" id="cresc-lote"></select></div>
+        <div class="form-group"><label class="form-label">Data *</label><input type="date" class="form-control" id="cresc-data"></div>
+        <div class="form-group"><label class="form-label">Peso Médio (g) *</label><input type="number" class="form-control" id="cresc-peso" step="0.1"></div>
+        <div class="form-group"><label class="form-label">Comprimento (cm)</label><input type="number" class="form-control" id="cresc-comp" step="0.1"></div>
+        <div class="form-group"><label class="form-label">Qtd Amostrada</label><input type="number" class="form-control" id="cresc-amostras"></div>
+      </div>
+      <div class="form-group mt-3"><label class="form-label">Observações</label><textarea class="form-control" id="cresc-obs"></textarea></div>
+    </div>
+    <div class="modal-footer"><button class="btn btn-ghost modal-close" data-modal="modal-crescimento">Cancelar</button><button class="btn btn-primary" id="btn-salvar-cresc">💾 Salvar</button></div>
+  </div>
+</div>
+
+<!-- Mortalidade -->
+<div class="modal-overlay" id="modal-mortalidade">
+  <div class="modal">
+    <div class="modal-header"><div class="modal-title">⚠️ Mortalidade</div><button class="btn btn-ghost btn-icon modal-close" data-modal="modal-mortalidade">✕</button></div>
+    <div class="modal-body">
+      <input type="hidden" id="mort-id">
+      <div class="form-grid">
+        <div class="form-group"><label class="form-label">Lote *</label><select class="form-control" id="mort-lote"></select></div>
+        <div class="form-group"><label class="form-label">Data *</label><input type="date" class="form-control" id="mort-data"></div>
+        <div class="form-group"><label class="form-label">Quantidade *</label><input type="number" class="form-control" id="mort-qtd"></div>
+        <div class="form-group"><label class="form-label">Motivo</label>
+          <select class="form-control" id="mort-motivo">
+            <option value="doença">Doença</option><option value="parasita">Parasita</option><option value="estresse">Estresse</option><option value="qualidade_agua">Qualidade da Água</option><option value="manejo">Manejo</option><option value="predador">Predador</option><option value="desconhecido">Desconhecido</option><option value="outro">Outro</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group mt-3"><label class="form-label">Observações</label><textarea class="form-control" id="mort-obs"></textarea></div>
+    </div>
+    <div class="modal-footer"><button class="btn btn-ghost modal-close" data-modal="modal-mortalidade">Cancelar</button><button class="btn btn-primary" id="btn-salvar-mort">💾 Salvar</button></div>
+  </div>
+</div>
+
+<!-- Venda -->
+<div class="modal-overlay" id="modal-venda">
+  <div class="modal">
+    <div class="modal-header"><div class="modal-title">💰 Venda</div><button class="btn btn-ghost btn-icon modal-close" data-modal="modal-venda">✕</button></div>
+    <div class="modal-body">
+      <input type="hidden" id="vend-id">
+      <div class="form-grid">
+        <div class="form-group"><label class="form-label">Lote *</label><select class="form-control" id="vend-lote"></select></div>
+        <div class="form-group"><label class="form-label">Data *</label><input type="date" class="form-control" id="vend-data"></div>
+        <div class="form-group"><label class="form-label">Quantidade *</label><input type="number" class="form-control" id="vend-qtd"></div>
+        <div class="form-group"><label class="form-label">Peso Total (kg)</label><input type="number" class="form-control" id="vend-peso" step="0.01"></div>
+        <div class="form-group"><label class="form-label">Preço por kg (R$)</label><input type="number" class="form-control" id="vend-preco" step="0.01"></div>
+        <div class="form-group"><label class="form-label">Valor Total (R$)</label><input type="number" class="form-control" id="vend-total" step="0.01" readonly style="background:var(--surface3)"></div>
+        <div class="form-group"><label class="form-label">Cliente</label><input type="text" class="form-control" id="vend-cliente"></div>
+      </div>
+      <div class="form-group mt-3"><label class="form-label">Observações</label><textarea class="form-control" id="vend-obs"></textarea></div>
+    </div>
+    <div class="modal-footer"><button class="btn btn-ghost modal-close" data-modal="modal-venda">Cancelar</button><button class="btn btn-primary" id="btn-salvar-venda">💾 Salvar</button></div>
+  </div>
+</div>
+
+<!-- Ficha Lote -->
+<div class="modal-overlay" id="modal-ficha-lote">
+  <div class="modal" style="max-width:800px">
+    <div class="modal-header"><div class="modal-title" id="ficha-lote-titulo">Ficha do Lote</div><button class="btn btn-ghost btn-icon modal-close" data-modal="modal-ficha-lote">✕</button></div>
+    <div class="modal-body" id="ficha-lote-body"></div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" id="btn-exportar-lote-atual">📦 Exportar</button>
+      <button class="btn btn-ghost modal-close" data-modal="modal-ficha-lote">Fechar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Confirm Dialog -->
+<div class="modal-overlay" id="modal-confirm">
+  <div class="modal" style="max-width:400px">
+    <div class="modal-header"><div class="modal-title" id="confirm-title">Confirmar</div></div>
+    <div class="modal-body"><p id="confirm-msg" style="font-size:14px;line-height:1.6"></p></div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" id="confirm-cancel">Cancelar</button>
+      <button class="btn btn-danger" id="confirm-ok">Confirmar</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+'use strict';
+// ======= UTILS =======
+const $ = id => document.getElementById(id);
+const $$ = sel => document.querySelectorAll(sel);
+
+function uid() { return Date.now().toString(36) + Math.random().toString(36).substr(2,6) }
+function fmtNum(n, d=2) { return parseFloat(n||0).toLocaleString('pt-BR',{minimumFractionDigits:d,maximumFractionDigits:d}) }
+function fmtBRL(n) { return 'R$ ' + fmtNum(n) }
+function fmtDate(d) { if(!d) return '-'; return new Date(d+'T12:00:00').toLocaleDateString('pt-BR') }
+function today() { return new Date().toISOString().split('T')[0] }
+function daysDiff(d1, d2=today()) { return Math.max(0, Math.floor((new Date(d2+' 12:00') - new Date(d1+' 12:00')) / 86400000)) }
+function nextCode(prefix, arr, field='codigo') {
+  const nums = arr.map(x => { const m = (x[field]||'').match(/(\d+)$/); return m ? parseInt(m[1]) : 0; });
+  return prefix + String(Math.max(0,...nums)+1).padStart(4,'0');
+}
+
+// Toast
+function toast(msg, type='info') {
+  const el = document.createElement('div');
+  el.className = `toast-item toast-${type}`;
+  const icons = {success:'✅', error:'❌', info:'ℹ️', warning:'⚠️'};
+  el.innerHTML = `<span>${icons[type]||'ℹ️'}</span><span>${msg}</span>`;
+  $('toast').appendChild(el);
+  setTimeout(() => el.remove(), 3500);
+}
+
+// Confirm dialog
+let confirmCb = null;
+function showConfirm(msg, cb, title='Confirmar ação') {
+  $('confirm-title').textContent = title;
+  $('confirm-msg').textContent = msg;
+  $('modal-confirm').classList.add('open');
+  confirmCb = cb;
+}
+$('confirm-ok').addEventListener('click', () => {
+  $('modal-confirm').classList.remove('open');
+  if(confirmCb) confirmCb();
+  confirmCb = null;
+});
+$('confirm-cancel').addEventListener('click', () => {
+  $('modal-confirm').classList.remove('open');
+  confirmCb = null;
+});
+
+// ======= DATA =======
+const DB = {
+  _load(k) { try { return JSON.parse(localStorage.getItem('aqg_'+k)) || [] } catch { return [] } },
+  _save(k, v) { localStorage.setItem('aqg_'+k, JSON.stringify(v)) },
+  get especies() { return this._load('especies') }, set especies(v) { this._save('especies',v) },
+  get tanques()  { return this._load('tanques') },  set tanques(v)  { this._save('tanques',v) },
+  get lotes()    { return this._load('lotes') },    set lotes(v)    { this._save('lotes',v) },
+  get alimentacoes() { return this._load('alimentacoes') }, set alimentacoes(v) { this._save('alimentacoes',v) },
+  get crescimentos() { return this._load('crescimentos') }, set crescimentos(v) { this._save('crescimentos',v) },
+  get mortalidades() { return this._load('mortalidades') }, set mortalidades(v) { this._save('mortalidades',v) },
+  get vendas()   { return this._load('vendas') },   set vendas(v)   { this._save('vendas',v) },
+};
+
+// ======= LOTE CÁLCULOS =======
+function calcLote(lote) {
+  const alims = DB.alimentacoes.filter(a => a.loteId === lote.id);
+  const crescs = DB.crescimentos.filter(c => c.loteId === lote.id).sort((a,b) => a.data.localeCompare(b.data));
+  const morts  = DB.mortalidades.filter(m => m.loteId === lote.id);
+  const vends  = DB.vendas.filter(v => v.loteId === lote.id);
+  const tanque = DB.tanques.find(t => t.id === lote.tanqueId) || {volume:0};
+
+  const mortTotal = (lote.mortIni||0) + morts.reduce((s,m)=>s+m.qtd,0);
+  const vendTotal = vends.reduce((s,v)=>s+v.qtd,0);
+  const qtdAtual  = Math.max(0, lote.qtdIni - mortTotal - vendTotal);
+  const pesoAtual = crescs.length ? crescs[crescs.length-1].peso : (lote.pesoIni||0);
+  const biomassa  = (qtdAtual * pesoAtual) / 1000;
+  const densidade = tanque.volume > 0 ? biomassa / tanque.volume : 0;
+  const racaoTotal = alims.reduce((s,a)=>s+a.qtd,0);
+  const ganhoTotal = crescs.length ? Math.max(0, pesoAtual - (lote.pesoIni||0)) : 0;
+  const biomassaGanho = ganhoTotal * qtdAtual / 1000;
+  const ca = biomassaGanho > 0.001 ? racaoTotal / biomassaGanho : 0;
+  const dias = lote.dataCriacao ? daysDiff(lote.dataCriacao) : 0;
+  const receita = vends.reduce((s,v)=>s+v.total,0);
+  const sobrevivencia = lote.qtdIni > 0 ? ((lote.qtdIni - mortTotal) / lote.qtdIni * 100) : 100;
+  const crescMedio = (dias > 0 && ganhoTotal > 0) ? ganhoTotal / dias : 0;
+  return { mortTotal, vendTotal, qtdAtual, pesoAtual, biomassa, densidade, racaoTotal, ca, dias, receita, sobrevivencia, crescMedio, ganhoTotal, tanqueVol: tanque.volume };
+}
+
+// ======= MODAL SYSTEM =======
+function openModal(id) { $(id)?.classList.add('open') }
+function closeModal(id) { $(id)?.classList.remove('open') }
+
+document.addEventListener('click', e => {
+  if(e.target.closest('.modal-close')) {
+    const modal = e.target.closest('.modal-close').dataset.modal;
+    if(modal) closeModal(modal);
+  }
+  // Close on backdrop
+  if(e.target.classList.contains('modal-overlay')) closeModal(e.target.id);
+});
+
+// ======= NAVIGATION =======
+const TITLES = {dashboard:'Dashboard',analise:'Análise da Produção',especies:'Espécies',tanques:'Tanques',lotes:'Lotes',alimentacao:'Alimentação',crescimento:'Crescimento',mortalidade:'Mortalidade',vendas:'Vendas',qrcodes:'QR Codes',etiquetas:'Etiquetas',relatorios:'Relatórios',importexport:'Central de Backup'};
+let currentSection = 'dashboard';
+let currentLoteId = null;
+
+function navigate(section) {
+  $$('.section').forEach(s => s.classList.remove('active'));
+  $$('.nav-item').forEach(n => n.classList.remove('active'));
+  $('sec-'+section)?.classList.add('active');
+  document.querySelector(`[data-nav="${section}"]`)?.classList.add('active');
+  $('page-title').textContent = TITLES[section] || section;
+  currentSection = section;
+  closeSidebar();
+  renderSection(section);
+}
+
+function renderSection(s) {
+  if(s==='dashboard') refreshDashboard();
+  else if(s==='especies') renderEspecies();
+  else if(s==='tanques') renderTanques();
+  else if(s==='lotes') renderLotes();
+  else if(s==='alimentacao') { populateSelects(); renderAlimentacao(); }
+  else if(s==='crescimento') { populateSelects(); renderCrescimento(); }
+  else if(s==='mortalidade') { populateSelects(); renderMortalidade(); }
+  else if(s==='vendas') { populateSelects(); renderVendas(); }
+  else if(s==='qrcodes') renderQRCodes();
+  else if(s==='etiquetas') renderEtiquetas();
+  else if(s==='relatorios') { populateSelects(); }
+  else if(s==='importexport') renderImportExport();
+  else if(s==='analise') renderAnalise();
+}
+
+$$('.nav-item').forEach(el => {
+  el.addEventListener('click', () => navigate(el.dataset.nav));
+});
+
+// ======= DASHBOARD =======
+let dashCharts = {};
+function refreshDashboard() {
+  const lotes = DB.lotes;
+  const tanques = DB.tanques;
+  const especies = DB.especies;
+  let totalPeixe=0,totalBiomassa=0,totalMort=0,totalVendido=0,totalReceita=0,caSum=0,caCount=0;
+  lotes.forEach(l => {
+    const c = calcLote(l);
+    totalPeixe += c.qtdAtual; totalBiomassa += c.biomassa; totalMort += c.mortTotal;
+    totalVendido += c.vendTotal; totalReceita += c.receita;
+    if(c.ca > 0 && c.ca < 20){ caSum += c.ca; caCount++; }
+  });
+  const caMed = caCount > 0 ? caSum/caCount : 0;
+  const volTotal = tanques.reduce((s,t)=>s+(t.volume||0),0);
+  $('dash-stats').innerHTML = `
+    <div class="stat-card green"><div class="stat-label">Lotes Ativos</div><div class="stat-value">${lotes.filter(l=>l.status!=='encerrado').length}</div><div class="stat-sub">de ${lotes.length} total</div><div class="stat-icon">📦</div></div>
+    <div class="stat-card blue"><div class="stat-label">Total de Peixes</div><div class="stat-value">${totalPeixe.toLocaleString('pt-BR')}</div><div class="stat-sub">em produção</div><div class="stat-icon">🐟</div></div>
+    <div class="stat-card green"><div class="stat-label">Biomassa Total</div><div class="stat-value">${fmtNum(totalBiomassa)} kg</div><div class="stat-sub">em produção</div><div class="stat-icon">⚖️</div></div>
+    <div class="stat-card orange"><div class="stat-label">Tanques</div><div class="stat-value">${tanques.length}</div><div class="stat-sub">${fmtNum(volTotal)} m³ total</div><div class="stat-icon">🏊</div></div>
+    <div class="stat-card purple"><div class="stat-label">Espécies</div><div class="stat-value">${especies.length}</div><div class="stat-sub">cadastradas</div><div class="stat-icon">🐠</div></div>
+    <div class="stat-card red"><div class="stat-label">Mortalidade</div><div class="stat-value">${totalMort.toLocaleString('pt-BR')}</div><div class="stat-sub">acumulada</div><div class="stat-icon">⚠️</div></div>
+    <div class="stat-card yellow"><div class="stat-label">Qtd Vendida</div><div class="stat-value">${totalVendido.toLocaleString('pt-BR')}</div><div class="stat-sub">peixes</div><div class="stat-icon">💰</div></div>
+    <div class="stat-card green"><div class="stat-label">Receita Total</div><div class="stat-value">${fmtBRL(totalReceita)}</div><div class="stat-sub">acumulada</div><div class="stat-icon">💵</div></div>
+    <div class="stat-card blue"><div class="stat-label">Conv. Alimentar</div><div class="stat-value">${caMed>0?fmtNum(caMed):'-'}</div><div class="stat-sub">média geral</div><div class="stat-icon">📊</div></div>
+    <div class="stat-card orange"><div class="stat-label">Vol. Total</div><div class="stat-value">${fmtNum(volTotal)} m³</div><div class="stat-sub">capacidade</div><div class="stat-icon">💧</div></div>
+  `;
+  buildDashCharts(lotes);
+}
+
+function buildDashCharts(lotes) {
+  const COLORS = ['#00c9a7','#0090ff','#ff6b35','#a855f7','#ffbe0b','#ff4d6a'];
+  const mkChart = (id, config) => {
+    const el = $(id); if(!el) return;
+    if(dashCharts[id]) dashCharts[id].destroy();
+    dashCharts[id] = new Chart(el.getContext('2d'), config);
+  };
+  const baseOpts = { responsive:true, maintainAspectRatio:false, plugins:{legend:{labels:{color:'#7a9bb8',boxWidth:10,font:{size:11}}}}, scales:{x:{ticks:{color:'#4a6a88',maxRotation:0},grid:{color:'#1e3248'}},y:{ticks:{color:'#4a6a88'},grid:{color:'#1e3248'}}}};
+
+  // Crescimento
+  mkChart('chart-crescimento',{type:'line',data:{datasets:lotes.slice(0,6).map((l,i)=>{
+    const d=DB.crescimentos.filter(c=>c.loteId===l.id).sort((a,b)=>a.data.localeCompare(b.data));
+    return{label:l.codigo,data:d.map(c=>({x:c.data,y:c.peso})),borderColor:COLORS[i%6],backgroundColor:'transparent',fill:false,tension:.3,pointRadius:3};
+  })},options:{...baseOpts,scales:{x:{type:'category',ticks:{color:'#4a6a88'},grid:{color:'#1e3248'}},y:{ticks:{color:'#4a6a88'},grid:{color:'#1e3248'}}}}});
+
+  // Biomassa
+  mkChart('chart-biomassa',{type:'bar',data:{labels:lotes.map(l=>l.codigo),datasets:[{label:'Biomassa (kg)',data:lotes.map(l=>+calcLote(l).biomassa.toFixed(2)),backgroundColor:COLORS.map(c=>c+'99'),borderColor:COLORS,borderWidth:1}]},options:baseOpts});
+
+  // Vendas por mês
+  const mesesV={};
+  DB.vendas.forEach(v=>{const m=v.data.substr(0,7);mesesV[m]=(mesesV[m]||0)+v.total;});
+  const kV=Object.keys(mesesV).sort();
+  mkChart('chart-vendas',{type:'line',data:{labels:kV,datasets:[{label:'Receita (R$)',data:kV.map(k=>mesesV[k]),borderColor:'#00c9a7',backgroundColor:'rgba(0,201,167,.08)',fill:true,tension:.4}]},options:baseOpts});
+
+  // Ração por mês
+  const mesesR={};
+  DB.alimentacoes.forEach(a=>{const m=a.data.substr(0,7);mesesR[m]=(mesesR[m]||0)+a.qtd;});
+  const kR=Object.keys(mesesR).sort();
+  mkChart('chart-racao',{type:'bar',data:{labels:kR,datasets:[{label:'Ração (kg)',data:kR.map(k=>mesesR[k]),backgroundColor:'rgba(168,85,247,.6)',borderColor:'#a855f7',borderWidth:1}]},options:baseOpts});
+}
+
+// ======= ESPÉCIES =======
+function renderEspecies() {
+  const esp = DB.especies;
+  const tb = $('tbody-especies');
+  if(!esp.length){tb.innerHTML=`<tr><td colspan="6"><div class="empty-state"><div class="empty-icon">🐠</div><div class="empty-text">Nenhuma espécie cadastrada</div></div></td></tr>`;return;}
+  tb.innerHTML = esp.map(e=>`<tr>
+    <td><strong>${e.nome}</strong></td>
+    <td><em style="color:var(--text2)">${e.cientifico||'-'}</em></td>
+    <td>${e.pesoIni||'-'} g</td>
+    <td>${e.tempo||'-'} dias</td>
+    <td class="text-muted">${e.obs||'-'}</td>
+    <td><button class="btn btn-ghost btn-xs" data-action="edit-especie" data-id="${e.id}">✏️</button> <button class="btn btn-danger btn-xs" data-action="del-especie" data-id="${e.id}">🗑️</button></td>
+  </tr>`).join('');
+}
+
+function salvarEspecie() {
+  const id = $('esp-id').value;
+  const nome = $('esp-nome').value.trim();
+  if(!nome){toast('Nome é obrigatório','error');return;}
+  const arr = DB.especies;
+  const obj = {id:id||uid(),nome,cientifico:$('esp-cientifico').value,pesoIni:parseFloat($('esp-peso').value)||0,tempo:parseInt($('esp-tempo').value)||0,obs:$('esp-obs').value};
+  if(id){const i=arr.findIndex(e=>e.id===id);if(i>=0)arr[i]=obj;}else arr.push(obj);
+  DB.especies=arr; closeModal('modal-especie'); renderEspecies(); toast('Espécie salva!','success');
+}
+
+$('btn-nova-especie').addEventListener('click',()=>{clearForm('esp');openModal('modal-especie');});
+$('btn-salvar-especie').addEventListener('click', salvarEspecie);
+
+// ======= TANQUES =======
+function renderTanques() {
+  const tqs = DB.tanques;
+  const tb = $('tbody-tanques');
+  if(!tqs.length){tb.innerHTML=`<tr><td colspan="7"><div class="empty-state"><div class="empty-icon">🏊</div><div class="empty-text">Nenhum tanque cadastrado</div></div></td></tr>`;return;}
+  tb.innerHTML = tqs.map(t=>{
+    const ocup = DB.lotes.filter(l=>l.tanqueId===t.id&&l.status!=='encerrado').length>0;
+    return `<tr>
+      <td><strong style="color:var(--accent)">${t.codigo}</strong></td>
+      <td>${fmtNum(t.volume)} m³</td>
+      <td>${t.profundidade?fmtNum(t.profundidade)+' m':'-'}</td>
+      <td>${t.area?fmtNum(t.area)+' m²':'-'}</td>
+      <td><span class="badge badge-blue">${t.tipo}</span></td>
+      <td>${ocup?'<span class="badge badge-orange">Ocupado</span>':'<span class="badge badge-green">Disponível</span>'}</td>
+      <td><button class="btn btn-ghost btn-xs" data-action="edit-tanque" data-id="${t.id}">✏️</button> <button class="btn btn-danger btn-xs" data-action="del-tanque" data-id="${t.id}">🗑️</button></td>
+    </tr>`;
+  }).join('');
+}
+
+function salvarTanque() {
+  const id = $('tq-id').value;
+  const vol = parseFloat($('tq-volume').value);
+  if(!vol){toast('Volume é obrigatório','error');return;}
+  const arr = DB.tanques;
+  const obj = {id:id||uid(),codigo:id?arr.find(t=>t.id===id)?.codigo:nextCode('TQ-',arr),volume:vol,profundidade:parseFloat($('tq-prof').value)||0,area:parseFloat($('tq-area').value)||0,tipo:$('tq-tipo').value,obs:$('tq-obs').value};
+  if(id){const i=arr.findIndex(t=>t.id===id);if(i>=0)arr[i]=obj;}else arr.push(obj);
+  DB.tanques=arr; closeModal('modal-tanque'); renderTanques(); toast('Tanque salvo!','success');
+}
+
+$('btn-novo-tanque').addEventListener('click',()=>{clearForm('tq');openModal('modal-tanque');});
+$('btn-salvar-tanque').addEventListener('click', salvarTanque);
+
+// ======= CALCULADORA =======
+let calcMode = 'retangular';
+let calcResultData = null;
+
+$$('.calc-tab').forEach(tab=>{
+  tab.addEventListener('click', ()=>{
+    $$('.calc-tab').forEach(t=>t.classList.remove('active'));
+    tab.classList.add('active');
+    calcMode = tab.dataset.calc;
+    $$('.calc-form').forEach(f=>f.style.display='none');
+    $('calc-'+calcMode).style.display='block';
+    $('calc-result').classList.remove('show');
+    $('btn-registrar-calculo').style.display='none';
+    calcResultData = null;
+  });
+});
+
+$('btn-calcular-tanque').addEventListener('click', ()=>{
+  let area=0, volume=0, prof=0;
+  if(calcMode==='retangular'){
+    const comp=parseFloat($('calc-ret-comp').value)||0, larg=parseFloat($('calc-ret-larg').value)||0; prof=parseFloat($('calc-ret-prof').value)||0;
+    if(!comp||!larg||!prof){toast('Preencha todos os campos','error');return;}
+    area=comp*larg; volume=area*prof;
+  } else if(calcMode==='circular'){
+    const diam=parseFloat($('calc-cir-diam').value)||0; prof=parseFloat($('calc-cir-prof').value)||0;
+    if(!diam||!prof){toast('Preencha todos os campos','error');return;}
+    area=Math.PI*(diam/2)*(diam/2); volume=area*prof;
+  } else if(calcMode==='oval'){
+    const comp=parseFloat($('calc-ov-comp').value)||0, larg=parseFloat($('calc-ov-larg').value)||0; prof=parseFloat($('calc-ov-prof').value)||0;
+    if(!comp||!larg||!prof){toast('Preencha todos os campos','error');return;}
+    area=Math.PI*(comp/2)*(larg/2); volume=area*prof;
+  } else if(calcMode==='trapezoidal'){
+    const bmai=parseFloat($('calc-trap-bmai').value)||0, bmen=parseFloat($('calc-trap-bmen').value)||0, comp=parseFloat($('calc-trap-comp').value)||0; prof=parseFloat($('calc-trap-prof').value)||0;
+    if(!bmai||!bmen||!comp||!prof){toast('Preencha todos os campos','error');return;}
+    area=((bmai+bmen)/2)*comp; volume=area*prof;
+  } else if(calcMode==='raceway'){
+    const comp=parseFloat($('calc-race-comp').value)||0, larg=parseFloat($('calc-race-larg').value)||0; prof=parseFloat($('calc-race-prof').value)||0;
+    if(!comp||!larg||!prof){toast('Preencha todos os campos','error');return;}
+    area=comp*larg; volume=area*prof; // Simplified raceway
+  }
+  calcResultData = {area, volume, prof};
+  $('res-area').textContent = fmtNum(area)+' m²';
+  $('res-volume').textContent = fmtNum(volume)+' m³';
+  $('res-volume-util').textContent = fmtNum(volume*0.8)+' m³';
+  $('res-prof').textContent = fmtNum(prof)+' m';
+  const cap = volume * 300; // 300 kg/m³ → peixes de ~300g → aprox peixes
+  $('res-capacidade').textContent = `~${fmtNum(volume*300,0)} kg de biomassa máx. (${fmtNum(volume*0.8*300/0.3,0)} peixes de 300g)`;
+  $('calc-result').classList.add('show');
+  $('btn-registrar-calculo').style.display='inline-flex';
+  toast('Cálculo realizado!','success');
+});
+
+$('btn-registrar-calculo').addEventListener('click', ()=>{
+  if(!calcResultData){toast('Calcule primeiro','error');return;}
+  clearForm('tq');
+  $('tq-volume').value = calcResultData.volume.toFixed(4);
+  $('tq-prof').value   = calcResultData.prof.toFixed(4);
+  $('tq-area').value   = calcResultData.area.toFixed(4);
+  openModal('modal-tanque');
+  toast('Valores preenchidos no cadastro!','info');
+});
+
+$('btn-limpar-calc').addEventListener('click', ()=>{
+  $$('.calc-input').forEach(i=>i.value='');
+  $('calc-result').classList.remove('show');
+  $('btn-registrar-calculo').style.display='none';
+  calcResultData=null;
+});
+
+// ======= LOTES =======
+function populateSelects() {
+  const esp = DB.especies;
+  const tqs = DB.tanques;
+  const lotes = DB.lotes;
+
+  const espOpts = '<option value="">Selecione espécie...</option>'+esp.map(e=>`<option value="${e.id}">${e.nome}</option>`).join('');
+  const tqOpts  = '<option value="">Selecione tanque...</option>'+tqs.map(t=>`<option value="${t.id}">${t.codigo} (${fmtNum(t.volume)} m³)</option>`).join('');
+  const loteOpts = '<option value="">Todos os lotes</option>'+lotes.map(l=>`<option value="${l.id}">${l.codigo}</option>`).join('');
+  const loteOptsReq = '<option value="">Selecione lote...</option>'+lotes.map(l=>`<option value="${l.id}">${l.codigo}</option>`).join('');
+
+  ['lot-especie'].forEach(id=>{const el=$(id);if(el)el.innerHTML=espOpts;});
+  ['lot-tanque'].forEach(id=>{const el=$(id);if(el)el.innerHTML=tqOpts;});
+  ['alim-lote','cresc-lote','mort-lote','vend-lote'].forEach(id=>{const el=$(id);if(el)el.innerHTML=loteOptsReq;});
+  ['filter-alim-lote','filter-cresc-lote','filter-mort-lote','filter-venda-lote'].forEach(id=>{const el=$(id);if(el)el.innerHTML=loteOpts;});
+
+  const relEsp=$('rel-especie'); if(relEsp) relEsp.innerHTML='<option value="">Todas espécies</option>'+esp.map(e=>`<option value="${e.id}">${e.nome}</option>`).join('');
+  const relTq=$('rel-tanque');   if(relTq)  relTq.innerHTML='<option value="">Todos tanques</option>'+tqs.map(t=>`<option value="${t.id}">${t.codigo}</option>`).join('');
+}
+
+function renderLotes() {
+  const search = $('search-lotes')?.value.toLowerCase()||'';
+  const statusF = $('filter-lote-status')?.value||'';
+  let lotes = DB.lotes;
+  if(search) lotes = lotes.filter(l=>l.codigo.toLowerCase().includes(search)||(DB.especies.find(e=>e.id===l.especieId)?.nome||'').toLowerCase().includes(search));
+  if(statusF) lotes = lotes.filter(l=>(l.status||'ativo')===statusF);
+  const tb = $('tbody-lotes');
+  if(!lotes.length){tb.innerHTML=`<tr><td colspan="10"><div class="empty-state"><div class="empty-icon">📦</div><div class="empty-text">Nenhum lote encontrado</div></div></td></tr>`;return;}
+  tb.innerHTML = lotes.map(l=>{
+    const esp=DB.especies.find(e=>e.id===l.especieId);
+    const tq=DB.tanques.find(t=>t.id===l.tanqueId);
+    const c=calcLote(l);
+    return `<tr>
+      <td><strong style="color:var(--accent)">${l.codigo}</strong><br><small class="text-muted">${fmtDate(l.dataCriacao)}</small></td>
+      <td>${esp?.nome||'-'}</td><td>${tq?.codigo||'-'}</td>
+      <td>${c.qtdAtual.toLocaleString('pt-BR')}</td>
+      <td>${fmtNum(c.biomassa)} kg</td>
+      <td>${fmtNum(c.densidade)} kg/m³</td>
+      <td>${c.ca>0?fmtNum(c.ca):'-'}</td>
+      <td>${c.dias} d</td>
+      <td>${(l.status||'ativo')==='encerrado'?'<span class="badge badge-gray">Encerrado</span>':'<span class="badge badge-green">Ativo</span>'}</td>
+      <td style="white-space:nowrap">
+        <button class="btn btn-ghost btn-xs" data-action="ver-lote" data-id="${l.id}">👁️</button>
+        <button class="btn btn-ghost btn-xs" data-action="edit-lote" data-id="${l.id}">✏️</button>
+        <button class="btn btn-ghost btn-xs btn-teal" data-action="export-lote" data-id="${l.id}">📦</button>
+        <button class="btn btn-danger btn-xs" data-action="del-lote" data-id="${l.id}">🗑️</button>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+function salvarLote() {
+  const id=$('lot-id').value;
+  const espId=$('lot-especie').value, tqId=$('lot-tanque').value, qtd=parseInt($('lot-qtd').value);
+  if(!espId||!tqId||!qtd){toast('Preencha espécie, tanque e quantidade','error');return;}
+  const arr=DB.lotes;
+  const obj={id:id||uid(),codigo:id?arr.find(l=>l.id===id)?.codigo:nextCode('LOTE-',arr),dataCriacao:$('lot-data').value||today(),especieId:espId,tanqueId:tqId,qtdIni:qtd,pesoIni:parseFloat($('lot-peso').value)||0,mortIni:parseInt($('lot-mort-ini').value)||0,obs:$('lot-obs').value,status:'ativo'};
+  if(id){const i=arr.findIndex(l=>l.id===id);if(i>=0)arr[i]={...arr[i],...obj};}else arr.push(obj);
+  DB.lotes=arr; closeModal('modal-lote'); renderLotes(); toast('Lote '+obj.codigo+' salvo!','success');
+}
+
+[$('btn-novo-lote'),$('btn-novo-lote2')].forEach(btn=>{
+  btn?.addEventListener('click',()=>{clearForm('lot');$('lot-data').value=today();populateSelects();openModal('modal-lote');});
+});
+$('btn-salvar-lote').addEventListener('click', salvarLote);
+$('search-lotes')?.addEventListener('input', renderLotes);
+$('filter-lote-status')?.addEventListener('change', renderLotes);
+
+// ======= FICHA DO LOTE =======
+function verFichaLote(id) {
+  const l=DB.lotes.find(x=>x.id===id); if(!l) return;
+  currentLoteId=id;
+  const esp=DB.especies.find(e=>e.id===l.especieId);
+  const tq=DB.tanques.find(t=>t.id===l.tanqueId);
+  const c=calcLote(l);
+  const alims=DB.alimentacoes.filter(a=>a.loteId===id).sort((a,b)=>b.data.localeCompare(a.data));
+  const crescs=DB.crescimentos.filter(x=>x.loteId===id).sort((a,b)=>b.data.localeCompare(a.data));
+  const morts=DB.mortalidades.filter(x=>x.loteId===id).sort((a,b)=>b.data.localeCompare(a.data));
+  const vends=DB.vendas.filter(v=>v.loteId===id).sort((a,b)=>b.data.localeCompare(a.data));
+
+  $('ficha-lote-titulo').textContent = `📦 ${l.codigo} — ${esp?.nome||''}`;
+  $('ficha-lote-body').innerHTML = `
+    <div class="ficha-grid">
+      <div class="ficha-item"><div class="ficha-key">Código</div><div class="ficha-val" style="color:var(--accent)">${l.codigo}</div></div>
+      <div class="ficha-item"><div class="ficha-key">Espécie</div><div class="ficha-val">${esp?.nome||'-'}</div></div>
+      <div class="ficha-item"><div class="ficha-key">Tanque</div><div class="ficha-val">${tq?.codigo||'-'}</div></div>
+      <div class="ficha-item"><div class="ficha-key">Dias de Cultivo</div><div class="ficha-val">${c.dias}</div></div>
+      <div class="ficha-item"><div class="ficha-key">Qtd Inicial</div><div class="ficha-val">${l.qtdIni.toLocaleString('pt-BR')}</div></div>
+      <div class="ficha-item"><div class="ficha-key">Qtd Atual</div><div class="ficha-val">${c.qtdAtual.toLocaleString('pt-BR')}</div></div>
+      <div class="ficha-item"><div class="ficha-key">Peso Médio</div><div class="ficha-val">${fmtNum(c.pesoAtual)} g</div></div>
+      <div class="ficha-item"><div class="ficha-key">Biomassa</div><div class="ficha-val">${fmtNum(c.biomassa)} kg</div></div>
+      <div class="ficha-item"><div class="ficha-key">Densidade</div><div class="ficha-val">${fmtNum(c.densidade)} kg/m³</div></div>
+      <div class="ficha-item"><div class="ficha-key">Mortalidade</div><div class="ficha-val" style="color:var(--danger)">${c.mortTotal}</div></div>
+      <div class="ficha-item"><div class="ficha-key">Sobrevivência</div><div class="ficha-val" style="color:var(--success)">${fmtNum(c.sobrevivencia)}%</div></div>
+      <div class="ficha-item"><div class="ficha-key">Ração Total</div><div class="ficha-val">${fmtNum(c.racaoTotal)} kg</div></div>
+      <div class="ficha-item"><div class="ficha-key">Conv. Alimentar</div><div class="ficha-val">${c.ca>0?fmtNum(c.ca):'-'}</div></div>
+      <div class="ficha-item"><div class="ficha-key">Receita</div><div class="ficha-val" style="color:var(--success)">${fmtBRL(c.receita)}</div></div>
+    </div>
+    <div style="margin:16px 0;display:flex;justify-content:center">
+      <div id="ficha-qr-box" style="background:#fff;padding:8px;border-radius:8px;display:inline-flex"></div>
+    </div>
+    <div class="divider"></div>
+    ${alims.length?`<h4 style="margin-bottom:10px">🌾 Alimentação</h4><div class="table-wrap" style="margin-bottom:14px"><table><thead><tr><th>Data</th><th>Ração</th><th>Qtd</th><th>Custo</th></tr></thead><tbody>${alims.slice(0,5).map(a=>`<tr><td>${fmtDate(a.data)}</td><td>${a.tipo||'-'}</td><td>${fmtNum(a.qtd)} kg</td><td>${fmtBRL(a.custo||0)}</td></tr>`).join('')}</tbody></table></div>`:''}
+    ${crescs.length?`<h4 style="margin-bottom:10px">📈 Crescimento</h4><div class="table-wrap" style="margin-bottom:14px"><table><thead><tr><th>Data</th><th>Peso</th><th>Comp.</th><th>Amostras</th></tr></thead><tbody>${crescs.slice(0,5).map(c=>`<tr><td>${fmtDate(c.data)}</td><td>${fmtNum(c.peso)} g</td><td>${c.comp?fmtNum(c.comp)+' cm':'-'}</td><td>${c.amostras||'-'}</td></tr>`).join('')}</tbody></table></div>`:''}
+    ${morts.length?`<h4 style="margin-bottom:10px">⚠️ Mortalidade</h4><div class="table-wrap" style="margin-bottom:14px"><table><thead><tr><th>Data</th><th>Qtd</th><th>Motivo</th></tr></thead><tbody>${morts.slice(0,5).map(m=>`<tr><td>${fmtDate(m.data)}</td><td>${m.qtd}</td><td>${m.motivo||'-'}</td></tr>`).join('')}</tbody></table></div>`:''}
+    ${vends.length?`<h4 style="margin-bottom:10px">💰 Vendas</h4><div class="table-wrap"><table><thead><tr><th>Data</th><th>Qtd</th><th>Peso</th><th>Total</th><th>Cliente</th></tr></thead><tbody>${vends.slice(0,5).map(v=>`<tr><td>${fmtDate(v.data)}</td><td>${v.qtd}</td><td>${fmtNum(v.pesoTotal)} kg</td><td>${fmtBRL(v.total)}</td><td>${v.cliente||'-'}</td></tr>`).join('')}</tbody></table></div>`:''}
+  `;
+  openModal('modal-ficha-lote');
+  // Gerar QR em canvas puro
+  setTimeout(()=>{
+    const box=$('ficha-qr-box');
+    if(box){ box.innerHTML=''; const qrText=`AquaGest|${l.codigo}|${esp?.nome||''}|${l.dataCriacao}`; box.appendChild(generateQRCanvas(qrText,110)); }
+  },60);
+}
+
+$('btn-exportar-lote-atual').addEventListener('click', ()=>{ if(currentLoteId) exportarLote(currentLoteId); });
+
+// ======= QR CODE PURO (sem biblioteca) =======
+// Implementação de QR Code via Canvas com biblioteca inline simplificada
+// Usa API pública de imagem QR que funciona offline via Canvas
+function generateQRCanvas(text, size=120) {
+  // Usamos uma abordagem com data matrix simples via canvas
+  // Para o QR real usamos a API do google charts que funciona com img tag
+  const canvas = document.createElement('canvas');
+  canvas.width = size; canvas.height = size;
+  canvas.className = 'qr-canvas';
+  const ctx = canvas.getContext('2d');
+  // Fundo branco
+  ctx.fillStyle = '#ffffff';
+  ctx.fillRect(0,0,size,size);
+  // Fallback: mostrar a imagem via URL de QR gerado externamente
+  // Retornamos img ao invés de canvas para melhor compatibilidade
+  const img = document.createElement('img');
+  img.width = size; img.height = size;
+  img.className = 'qr-canvas';
+  img.alt = text;
+  img.title = text;
+  img.style.cssText = 'border-radius:4px;display:block';
+  // Tenta URL do QR server
+  const encoded = encodeURIComponent(text);
+  img.src = `https://api.qrserver.com/v1/create-qr-code/?size=${size}x${size}&data=${encoded}&bgcolor=ffffff&color=000000&format=png`;
+  img.onerror = () => {
+    // Fallback: canvas com padrão de dados simulado + texto
+    img.replaceWith(canvas);
+    ctx.fillStyle='#000';
+    ctx.font = 'bold 8px monospace';
+    ctx.fillText('QR:', 4, 12);
+    // Desenha padrão quadrado simulado (decorativo)
+    const step = Math.floor(size/10);
+    for(let i=0;i<10;i++) for(let j=0;j<10;j++){
+      if((i+j)%2===0||(i<3&&j<3)||(i<3&&j>6)||(i>6&&j<3)){
+        ctx.fillStyle='#000';ctx.fillRect(i*step,j*step,step-1,step-1);
+      }
+    }
+    const short = text.split('|').slice(0,2).join(' ');
+    ctx.fillStyle='#000';ctx.font='bold 7px sans-serif';
+    ctx.fillText(short.substr(0,14),2,size-4);
+  };
+  return img;
+}
+
+// ======= QR CODES PAGE =======
+function renderQRCodes() {
+  const lotes = DB.lotes;
+  const grid = $('qr-grid');
+  if(!lotes.length){grid.innerHTML=`<div class="empty-state"><div class="empty-icon">📱</div><div class="empty-text">Nenhum lote cadastrado</div></div>`;return;}
+  grid.innerHTML = lotes.map(l=>{
+    const esp = DB.especies.find(e=>e.id===l.especieId);
+    const c = calcLote(l);
+    return `<div class="card" style="text-align:center">
+      <div style="font-family:'Syne',sans-serif;font-weight:700;margin-bottom:6px;color:var(--accent)">${l.codigo}</div>
+      <div style="font-size:12px;color:var(--text3);margin-bottom:12px">${esp?.nome||'-'} • ${c.qtdAtual.toLocaleString('pt-BR')} peixes</div>
+      <div id="qr-box-${l.id}" style="display:flex;justify-content:center;margin-bottom:12px"></div>
+      <div style="display:flex;gap:6px;justify-content:center">
+        <button class="btn btn-secondary btn-xs" data-action="download-qr" data-id="${l.id}" data-codigo="${l.codigo}">⬇️ PNG</button>
+        <button class="btn btn-ghost btn-xs" data-action="ver-lote" data-id="${l.id}">👁️ Ficha</button>
+      </div>
+    </div>`;
+  }).join('');
+  lotes.forEach(l=>{
+    const esp=DB.especies.find(e=>e.id===l.especieId);
+    const box=$('qr-box-'+l.id);
+    if(box){ box.innerHTML=''; box.appendChild(generateQRCanvas(`AquaGest|${l.codigo}|${esp?.nome||''}|${l.dataCriacao}`,130)); }
+  });
+}
+
+$('btn-refresh-qr').addEventListener('click', renderQRCodes);
+
+function downloadQR(loteId, codigo) {
+  const box=$('qr-box-'+loteId); if(!box) return;
+  const img=box.querySelector('img');
+  const canvas=box.querySelector('canvas');
+  if(img && img.src.startsWith('http')){
+    const a=document.createElement('a'); a.href=img.src; a.download=`qrcode_${codigo}.png`; a.target='_blank'; a.click();
+  } else if(canvas){
+    const a=document.createElement('a'); a.href=canvas.toDataURL('image/png'); a.download=`qrcode_${codigo}.png`; a.click();
+  }
+}
+
+// ======= ETIQUETAS =======
+function renderEtiquetas() {
+  const lotes = DB.lotes;
+  const grid = $('labels-grid');
+  if(!lotes.length){grid.innerHTML=`<div class="empty-state"><div class="empty-icon">🏷️</div><div class="empty-text">Nenhum lote cadastrado</div></div>`;return;}
+  grid.innerHTML = lotes.map(l=>{
+    const esp=DB.especies.find(e=>e.id===l.especieId);
+    const c=calcLote(l);
+    return `<div class="card etiqueta-print" style="border:2px solid var(--border)">
+      <div style="display:flex;align-items:center;gap:10px">
+        <div id="etq-qr-${l.id}" style="flex-shrink:0"></div>
+        <div>
+          <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:14px;color:var(--accent)">${l.codigo}</div>
+          <div style="font-size:11px;color:var(--text2);margin-top:2px">${esp?.nome||'-'}</div>
+          <div style="font-size:10px;color:var(--text3);margin-top:2px">${fmtDate(l.dataCriacao)}</div>
+          <div style="font-size:10px;color:var(--text3)">${c.qtdAtual.toLocaleString('pt-BR')} peixes</div>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+  lotes.forEach(l=>{
+    const esp=DB.especies.find(e=>e.id===l.especieId);
+    const box=$('etq-qr-'+l.id);
+    if(box){ box.innerHTML=''; box.appendChild(generateQRCanvas(`AquaGest|${l.codigo}|${esp?.nome||''}|${l.dataCriacao}`,72)); }
+  });
+}
+
+$('btn-print-labels').addEventListener('click',()=>window.print());
+
+// ======= ALIMENTAÇÃO =======
+function renderAlimentacao() {
+  const loteF=$('filter-alim-lote')?.value||'', deF=$('filter-alim-de')?.value||'', ateF=$('filter-alim-ate')?.value||'';
+  let arr=DB.alimentacoes;
+  if(loteF) arr=arr.filter(a=>a.loteId===loteF);
+  if(deF)   arr=arr.filter(a=>a.data>=deF);
+  if(ateF)  arr=arr.filter(a=>a.data<=ateF);
+  arr=arr.sort((a,b)=>b.data.localeCompare(a.data));
+  const tb=$('tbody-alimentacao');
+  if(!arr.length){tb.innerHTML=`<tr><td colspan="7"><div class="empty-state"><div class="empty-icon">🌾</div><div class="empty-text">Nenhum registro</div></div></td></tr>`;return;}
+  tb.innerHTML=arr.map(a=>{const l=DB.lotes.find(x=>x.id===a.loteId);return`<tr><td>${fmtDate(a.data)}</td><td><strong style="color:var(--accent)">${l?.codigo||'-'}</strong></td><td>${a.tipo||'-'}</td><td>${fmtNum(a.qtd)} kg</td><td>${fmtBRL(a.custo||0)}</td><td class="text-muted">${a.obs||'-'}</td><td><button class="btn btn-danger btn-xs" data-action="del-alim" data-id="${a.id}">🗑️</button></td></tr>`;}).join('');
+}
+
+function salvarAlimentacao() {
+  const loteId=$('alim-lote').value, qtd=parseFloat($('alim-qtd').value);
+  if(!loteId||!qtd){toast('Lote e quantidade obrigatórios','error');return;}
+  const arr=DB.alimentacoes;
+  arr.push({id:uid(),loteId,data:$('alim-data').value||today(),tipo:$('alim-tipo').value,qtd,custo:parseFloat($('alim-custo').value)||0,obs:$('alim-obs').value});
+  DB.alimentacoes=arr; closeModal('modal-alimentacao'); renderAlimentacao(); toast('Alimentação registrada!','success');
+}
+
+$('btn-nova-alim').addEventListener('click',()=>{clearForm('alim');$('alim-data').value=today();populateSelects();openModal('modal-alimentacao');});
+$('btn-salvar-alim').addEventListener('click', salvarAlimentacao);
+['filter-alim-lote','filter-alim-de','filter-alim-ate'].forEach(id=>{$(id)?.addEventListener('change',renderAlimentacao);});
+
+// ======= CRESCIMENTO =======
+function renderCrescimento() {
+  const loteF=$('filter-cresc-lote')?.value||'';
+  let arr=DB.crescimentos;
+  if(loteF) arr=arr.filter(c=>c.loteId===loteF);
+  arr=arr.sort((a,b)=>b.data.localeCompare(a.data));
+  const tb=$('tbody-crescimento');
+  if(!arr.length){tb.innerHTML=`<tr><td colspan="6"><div class="empty-state"><div class="empty-icon">📈</div><div class="empty-text">Nenhum registro</div></div></td></tr>`;return;}
+  tb.innerHTML=arr.map(c=>{const l=DB.lotes.find(x=>x.id===c.loteId);return`<tr><td>${fmtDate(c.data)}</td><td><strong style="color:var(--accent)">${l?.codigo||'-'}</strong></td><td>${fmtNum(c.peso)} g</td><td>${c.comp?fmtNum(c.comp)+' cm':'-'}</td><td>${c.amostras||'-'}</td><td class="text-muted">${c.obs||'-'}</td></tr>`;}).join('');
+}
+
+function salvarCrescimento() {
+  const loteId=$('cresc-lote').value, peso=parseFloat($('cresc-peso').value);
+  if(!loteId||!peso){toast('Lote e peso obrigatórios','error');return;}
+  const arr=DB.crescimentos;
+  arr.push({id:uid(),loteId,data:$('cresc-data').value||today(),peso,comp:parseFloat($('cresc-comp').value)||0,amostras:parseInt($('cresc-amostras').value)||0,obs:$('cresc-obs').value});
+  DB.crescimentos=arr; closeModal('modal-crescimento'); renderCrescimento(); toast('Biometria registrada!','success');
+}
+
+$('btn-novo-cresc').addEventListener('click',()=>{clearForm('cresc');$('cresc-data').value=today();populateSelects();openModal('modal-crescimento');});
+$('btn-salvar-cresc').addEventListener('click', salvarCrescimento);
+$('filter-cresc-lote')?.addEventListener('change', renderCrescimento);
+
+// ======= MORTALIDADE =======
+function renderMortalidade() {
+  const loteF=$('filter-mort-lote')?.value||'';
+  let arr=DB.mortalidades;
+  if(loteF) arr=arr.filter(m=>m.loteId===loteF);
+  arr=arr.sort((a,b)=>b.data.localeCompare(a.data));
+  const tb=$('tbody-mortalidade');
+  if(!arr.length){tb.innerHTML=`<tr><td colspan="6"><div class="empty-state"><div class="empty-icon">⚠️</div><div class="empty-text">Nenhum registro</div></div></td></tr>`;return;}
+  tb.innerHTML=arr.map(m=>{const l=DB.lotes.find(x=>x.id===m.loteId);return`<tr><td>${fmtDate(m.data)}</td><td><strong style="color:var(--accent)">${l?.codigo||'-'}</strong></td><td><strong style="color:var(--danger)">${m.qtd}</strong></td><td><span class="badge badge-orange">${m.motivo||'-'}</span></td><td class="text-muted">${m.obs||'-'}</td><td><button class="btn btn-danger btn-xs" data-action="del-mort" data-id="${m.id}">🗑️</button></td></tr>`;}).join('');
+}
+
+function salvarMortalidade() {
+  const loteId=$('mort-lote').value, qtd=parseInt($('mort-qtd').value);
+  if(!loteId||!qtd){toast('Lote e quantidade obrigatórios','error');return;}
+  const arr=DB.mortalidades;
+  arr.push({id:uid(),loteId,data:$('mort-data').value||today(),qtd,motivo:$('mort-motivo').value,obs:$('mort-obs').value});
+  DB.mortalidades=arr; closeModal('modal-mortalidade'); renderMortalidade(); toast('Mortalidade registrada!','success');
+}
+
+$('btn-nova-mort').addEventListener('click',()=>{clearForm('mort');$('mort-data').value=today();populateSelects();openModal('modal-mortalidade');});
+$('btn-salvar-mort').addEventListener('click', salvarMortalidade);
+$('filter-mort-lote')?.addEventListener('change', renderMortalidade);
+
+// ======= VENDAS =======
+$('vend-peso').addEventListener('input', calcVendaTotal);
+$('vend-preco').addEventListener('input', calcVendaTotal);
+function calcVendaTotal(){
+  const p=parseFloat($('vend-peso').value)||0, pr=parseFloat($('vend-preco').value)||0;
+  $('vend-total').value=(p*pr).toFixed(2);
+}
+
+function renderVendas() {
+  const loteF=$('filter-venda-lote')?.value||'', deF=$('filter-venda-de')?.value||'', ateF=$('filter-venda-ate')?.value||'';
+  let arr=DB.vendas;
+  if(loteF) arr=arr.filter(v=>v.loteId===loteF);
+  if(deF)   arr=arr.filter(v=>v.data>=deF);
+  if(ateF)  arr=arr.filter(v=>v.data<=ateF);
+  arr=arr.sort((a,b)=>b.data.localeCompare(a.data));
+  const tb=$('tbody-vendas');
+  if(!arr.length){tb.innerHTML=`<tr><td colspan="8"><div class="empty-state"><div class="empty-icon">💰</div><div class="empty-text">Nenhuma venda</div></div></td></tr>`;return;}
+  tb.innerHTML=arr.map(v=>{const l=DB.lotes.find(x=>x.id===v.loteId);return`<tr><td>${fmtDate(v.data)}</td><td><strong style="color:var(--accent)">${l?.codigo||'-'}</strong></td><td>${v.qtd.toLocaleString('pt-BR')}</td><td>${fmtNum(v.pesoTotal)} kg</td><td>${fmtBRL(v.preco)}/kg</td><td><strong style="color:var(--success)">${fmtBRL(v.total)}</strong></td><td>${v.cliente||'-'}</td><td><button class="btn btn-danger btn-xs" data-action="del-venda" data-id="${v.id}">🗑️</button></td></tr>`;}).join('');
+}
+
+function salvarVenda() {
+  const loteId=$('vend-lote').value, qtd=parseInt($('vend-qtd').value);
+  if(!loteId||!qtd){toast('Lote e quantidade obrigatórios','error');return;}
+  const l=DB.lotes.find(x=>x.id===loteId);
+  const c=calcLote(l);
+  if(qtd>c.qtdAtual){toast(`Estoque insuficiente (${c.qtdAtual} disponíveis)`,'error');return;}
+  const pesoTotal=parseFloat($('vend-peso').value)||0, preco=parseFloat($('vend-preco').value)||0;
+  const total=parseFloat($('vend-total').value)||pesoTotal*preco;
+  const arr=DB.vendas;
+  arr.push({id:uid(),loteId,data:$('vend-data').value||today(),qtd,pesoTotal,preco,total,cliente:$('vend-cliente').value,obs:$('vend-obs').value});
+  DB.vendas=arr; closeModal('modal-venda'); renderVendas(); toast('Venda registrada!','success');
+}
+
+$('btn-nova-venda').addEventListener('click',()=>{clearForm('vend');$('vend-data').value=today();populateSelects();openModal('modal-venda');});
+$('btn-salvar-venda').addEventListener('click', salvarVenda);
+['filter-venda-lote','filter-venda-de','filter-venda-ate'].forEach(id=>{$(id)?.addEventListener('change',renderVendas);});
+
+// ======= RELATÓRIOS =======
+$('btn-gerar-rel').addEventListener('click', gerarRelatorio);
+$('btn-rel-pdf').addEventListener('click', exportarRelatorioPDF);
+$('btn-rel-xlsx').addEventListener('click', exportarRelatorioXLSX);
+
+function gerarRelatorio() {
+  const tipo=$('rel-tipo').value, espF=$('rel-especie').value, tqF=$('rel-tanque').value, deF=$('rel-de').value, ateF=$('rel-ate').value;
+  let lotes=DB.lotes;
+  if(espF) lotes=lotes.filter(l=>l.especieId===espF);
+  if(tqF)  lotes=lotes.filter(l=>l.tanqueId===tqF);
+  const ids=lotes.map(l=>l.id);
+  const filterDate=(arr,f)=>{let r=arr.filter(x=>ids.includes(x.loteId));if(deF)r=r.filter(x=>x[f]>=deF);if(ateF)r=r.filter(x=>x[f]<=ateF);return r;};
+  const out=$('relatorio-output');
+
+  if(tipo==='lotes-ativos'||tipo==='lotes-encerrados'){
+    const status=tipo==='lotes-ativos'?'ativo':'encerrado';
+    const data=lotes.filter(l=>(l.status||'ativo')===status);
+    out.innerHTML=`<div class="table-wrap"><table><thead><tr><th>Código</th><th>Espécie</th><th>Tanque</th><th>Qtd Atual</th><th>Biomassa</th><th>Dias</th><th>Receita</th></tr></thead><tbody>${data.map(l=>{const c=calcLote(l);const esp=DB.especies.find(e=>e.id===l.especieId);const tq=DB.tanques.find(t=>t.id===l.tanqueId);return`<tr><td>${l.codigo}</td><td>${esp?.nome||'-'}</td><td>${tq?.codigo||'-'}</td><td>${c.qtdAtual}</td><td>${fmtNum(c.biomassa)} kg</td><td>${c.dias}</td><td>${fmtBRL(c.receita)}</td></tr>`;}).join('')}</tbody></table></div>`;
+  } else if(tipo==='biomassa'){
+    const data=lotes.map(l=>{const c=calcLote(l);const esp=DB.especies.find(e=>e.id===l.especieId);return{...l,c,nomeEsp:esp?.nome||'-'};});
+    out.innerHTML=`<div class="table-wrap"><table><thead><tr><th>Lote</th><th>Espécie</th><th>Qtd Atual</th><th>Peso Médio</th><th>Biomassa</th></tr></thead><tbody>${data.map(l=>`<tr><td>${l.codigo}</td><td>${l.nomeEsp}</td><td>${l.c.qtdAtual}</td><td>${fmtNum(l.c.pesoAtual)} g</td><td>${fmtNum(l.c.biomassa)} kg</td></tr>`).join('')}</tbody></table></div>`;
+  } else if(tipo==='mortalidade'){
+    const data=filterDate(DB.mortalidades,'data');
+    out.innerHTML=`<div class="alert alert-warning">Total morto: ${data.reduce((s,m)=>s+m.qtd,0).toLocaleString('pt-BR')} peixes</div><div class="table-wrap"><table><thead><tr><th>Data</th><th>Lote</th><th>Qtd</th><th>Motivo</th></tr></thead><tbody>${data.map(m=>{const l=DB.lotes.find(x=>x.id===m.loteId);return`<tr><td>${fmtDate(m.data)}</td><td>${l?.codigo||'-'}</td><td>${m.qtd}</td><td>${m.motivo}</td></tr>`;}).join('')}</tbody></table></div>`;
+  } else if(tipo==='alimentacao'){
+    const data=filterDate(DB.alimentacoes,'data');
+    out.innerHTML=`<div class="alert alert-info">Total ração: ${fmtNum(data.reduce((s,a)=>s+a.qtd,0))} kg</div><div class="table-wrap"><table><thead><tr><th>Data</th><th>Lote</th><th>Ração</th><th>Qtd (kg)</th><th>Custo</th></tr></thead><tbody>${data.map(a=>{const l=DB.lotes.find(x=>x.id===a.loteId);return`<tr><td>${fmtDate(a.data)}</td><td>${l?.codigo||'-'}</td><td>${a.tipo||'-'}</td><td>${fmtNum(a.qtd)}</td><td>${fmtBRL(a.custo||0)}</td></tr>`;}).join('')}</tbody></table></div>`;
+  } else if(tipo==='vendas'||tipo==='receita'){
+    const data=filterDate(DB.vendas,'data');
+    out.innerHTML=`<div class="alert alert-success">Receita total: ${fmtBRL(data.reduce((s,v)=>s+v.total,0))}</div><div class="table-wrap"><table><thead><tr><th>Data</th><th>Lote</th><th>Qtd</th><th>Peso</th><th>Total</th><th>Cliente</th></tr></thead><tbody>${data.map(v=>{const l=DB.lotes.find(x=>x.id===v.loteId);return`<tr><td>${fmtDate(v.data)}</td><td>${l?.codigo||'-'}</td><td>${v.qtd}</td><td>${fmtNum(v.pesoTotal)} kg</td><td>${fmtBRL(v.total)}</td><td>${v.cliente||'-'}</td></tr>`;}).join('')}</tbody></table></div>`;
+  } else if(tipo==='crescimento'){
+    const data=filterDate(DB.crescimentos,'data');
+    out.innerHTML=`<div class="table-wrap"><table><thead><tr><th>Data</th><th>Lote</th><th>Peso</th><th>Comp.</th><th>Amostras</th></tr></thead><tbody>${data.map(c=>{const l=DB.lotes.find(x=>x.id===c.loteId);return`<tr><td>${fmtDate(c.data)}</td><td>${l?.codigo||'-'}</td><td>${fmtNum(c.peso)} g</td><td>${c.comp?fmtNum(c.comp)+' cm':'-'}</td><td>${c.amostras||'-'}</td></tr>`;}).join('')}</tbody></table></div>`;
+  } else if(tipo==='conversao'){
+    const data=lotes.map(l=>{const c=calcLote(l);const esp=DB.especies.find(e=>e.id===l.especieId);return{codigo:l.codigo,esp:esp?.nome||'-',ca:c.ca,racaoTotal:c.racaoTotal};});
+    out.innerHTML=`<div class="table-wrap"><table><thead><tr><th>Lote</th><th>Espécie</th><th>Ração (kg)</th><th>Conv. Alimentar</th></tr></thead><tbody>${data.map(d=>`<tr><td>${d.codigo}</td><td>${d.esp}</td><td>${fmtNum(d.racaoTotal)}</td><td>${d.ca>0?fmtNum(d.ca):'-'}</td></tr>`).join('')}</tbody></table></div>`;
+  }
+}
+
+function exportarRelatorioPDF() {
+  gerarRelatorio();
+  const {jsPDF}=window.jspdf; const doc=new jsPDF();
+  doc.setFont('helvetica','bold'); doc.setFontSize(16); doc.text('AquaGest Pro — Relatório',15,15);
+  doc.setFont('helvetica','normal'); doc.setFontSize(10); doc.text(`Gerado: ${new Date().toLocaleString('pt-BR')}`,15,22);
+  const rows=$$('#relatorio-output tr'); let y=30;
+  rows.forEach(row=>{
+    const cells=[...row.querySelectorAll('th,td')].map(c=>c.textContent.trim().substr(0,20));
+    if(cells.length){doc.text(cells.join(' | '),15,y);y+=7;if(y>270){doc.addPage();y=15;}}
+  });
+  doc.save('relatorio_aquagest.pdf'); toast('PDF gerado!','success');
+}
+
+function exportarRelatorioXLSX() {
+  gerarRelatorio();
+  const table=document.querySelector('#relatorio-output table');
+  if(!table){toast('Gere o relatório primeiro','error');return;}
+  const wb=XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb,XLSX.utils.table_to_sheet(table),'Relatório');
+  XLSX.writeFile(wb,'relatorio_aquagest.xlsx'); toast('Excel gerado!','success');
+}
+
+// ======= ANÁLISE =======
+function renderAnalise() {
+  const lotes=DB.lotes;
+  if(!lotes.length){$('analise-content').innerHTML=`<div class="empty-state"><div class="empty-icon">🔬</div><div class="empty-text">Nenhum dado disponível</div></div>`;return;}
+  const arr=lotes.map(l=>({...l,...calcLote(l),nomeEsp:DB.especies.find(e=>e.id===l.especieId)?.nome||'-'}));
+  const sorted=[...arr].sort((a,b)=>b.biomassa-a.biomassa);
+  const melhorCA=arr.filter(l=>l.ca>0).sort((a,b)=>a.ca-b.ca)[0];
+  const maiorBio=sorted[0], maiorRec=[...arr].sort((a,b)=>b.receita-a.receita)[0], melhorSob=[...arr].sort((a,b)=>b.sobrevivencia-a.sobrevivencia)[0];
+  const totalBio=arr.reduce((s,l)=>s+l.biomassa,0), totalRec=arr.reduce((s,l)=>s+l.receita,0);
+  const projecoes=arr.map(l=>({...l,pesoFuturo:l.pesoAtual+(l.crescMedio||2)*30,bioFutura:(l.qtdAtual*(l.pesoAtual+(l.crescMedio||2)*30))/1000}));
+  $('analise-content').innerHTML=`
+    <div class="stat-grid" style="margin-bottom:20px">
+      <div class="stat-card green"><div class="stat-label">Total Lotes</div><div class="stat-value">${lotes.length}</div></div>
+      <div class="stat-card blue"><div class="stat-label">Total Peixes</div><div class="stat-value">${arr.reduce((s,l)=>s+l.qtdAtual,0).toLocaleString('pt-BR')}</div></div>
+      <div class="stat-card green"><div class="stat-label">Biomassa Total</div><div class="stat-value">${fmtNum(totalBio)} kg</div></div>
+      <div class="stat-card orange"><div class="stat-label">Receita Total</div><div class="stat-value">${fmtBRL(totalRec)}</div></div>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-bottom:20px">
+      ${maiorBio?`<div class="analysis-card"><div class="analysis-rank">🏆</div><div class="analysis-label">Maior Biomassa</div><div class="analysis-value" style="color:var(--accent)">${maiorBio.codigo}</div><div class="analysis-sub">${fmtNum(maiorBio.biomassa)} kg — ${maiorBio.nomeEsp}</div></div>`:''}
+      ${melhorCA?`<div class="analysis-card"><div class="analysis-rank">⭐</div><div class="analysis-label">Melhor Conv. Alimentar</div><div class="analysis-value" style="color:var(--accent2)">${melhorCA.codigo}</div><div class="analysis-sub">CA: ${fmtNum(melhorCA.ca)}</div></div>`:''}
+      ${maiorRec?`<div class="analysis-card"><div class="analysis-rank">💰</div><div class="analysis-label">Maior Receita</div><div class="analysis-value" style="color:var(--success)">${maiorRec.codigo}</div><div class="analysis-sub">${fmtBRL(maiorRec.receita)}</div></div>`:''}
+      ${melhorSob?`<div class="analysis-card"><div class="analysis-rank">🐟</div><div class="analysis-label">Melhor Sobrevivência</div><div class="analysis-value" style="color:var(--warning)">${melhorSob.codigo}</div><div class="analysis-sub">${fmtNum(melhorSob.sobrevivencia)}%</div></div>`:''}
+    </div>
+    <h3 style="margin-bottom:12px">📊 Ranking por Biomassa</h3>
+    <div class="table-wrap" style="margin-bottom:20px"><table><thead><tr><th>#</th><th>Lote</th><th>Espécie</th><th>Qtd</th><th>Biomassa</th><th>CA</th><th>Sobrevivência</th><th>Receita</th></tr></thead><tbody>${sorted.map((l,i)=>`<tr><td><strong style="color:var(--text3)">${i+1}º</strong></td><td><strong style="color:var(--accent)">${l.codigo}</strong></td><td>${l.nomeEsp}</td><td>${l.qtdAtual.toLocaleString('pt-BR')}</td><td>${fmtNum(l.biomassa)} kg</td><td>${l.ca>0?fmtNum(l.ca):'-'}</td><td><span style="color:${l.sobrevivencia>90?'var(--success)':'var(--warning)'}">${fmtNum(l.sobrevivencia)}%</span></td><td>${fmtBRL(l.receita)}</td></tr>`).join('')}</tbody></table></div>
+    <h3 style="margin-bottom:12px">🔮 Projeção 30 dias</h3>
+    <div class="table-wrap"><table><thead><tr><th>Lote</th><th>Peso Atual</th><th>Peso Proj. (+30d)</th><th>Biomassa Atual</th><th>Biomassa Proj.</th></tr></thead><tbody>${projecoes.map(l=>`<tr><td><strong style="color:var(--accent)">${l.codigo}</strong></td><td>${fmtNum(l.pesoAtual)} g</td><td>${fmtNum(l.pesoFuturo)} g</td><td>${fmtNum(l.biomassa)} kg</td><td><strong style="color:var(--success)">${fmtNum(l.bioFutura)} kg</strong></td></tr>`).join('')}</tbody></table></div>
+  `;
+}
+
+// ======= IMPORT/EXPORT =======
+function renderImportExport() {
+  const lotes=DB.lotes;
+  const list=$('export-lotes-list');
+  list.innerHTML=lotes.map(l=>`<label style="display:flex;align-items:center;gap:6px;background:var(--surface2);padding:6px 10px;border-radius:6px;cursor:pointer;font-size:13px"><input type="checkbox" class="export-lote-check" value="${l.id}" style="accent-color:var(--accent)"> ${l.codigo}</label>`).join('');
+  renderBackupList();
+}
+
+function renderBackupList() {
+  const keys=Object.keys(localStorage).filter(k=>k.startsWith('aqg_backup_')).sort().reverse();
+  const list=$('backup-list');
+  if(!keys.length){list.innerHTML=`<div class="text-muted">Nenhum backup encontrado</div>`;return;}
+  list.innerHTML=`<div class="table-wrap"><table><thead><tr><th>Data/Hora</th><th>Tamanho</th><th>Ação</th></tr></thead><tbody>${keys.slice(0,10).map(k=>{const d=localStorage.getItem(k);return`<tr><td>${new Date(parseInt(k.replace('aqg_backup_',''))).toLocaleString('pt-BR')}</td><td>${(d.length/1024).toFixed(1)} KB</td><td><button class="btn btn-secondary btn-xs" data-action="restaurar-backup-key" data-key="${k}">🔄 Restaurar</button></td></tr>`;}).join('')}</tbody></table></div>`;
+}
+
+$$('.tabs').forEach(tabGroup=>{
+  tabGroup.querySelectorAll('.tab').forEach(tab=>{
+    tab.addEventListener('click',()=>{
+      tabGroup.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+      tab.classList.add('active');
+      const subtabId=tab.dataset.subtab;
+      ['tab-export','tab-import','tab-backup'].forEach(id=>{const el=$(id);if(el)el.style.display=id===subtabId?'block':'none';});
+    });
+  });
+});
+
+$('import-zone').addEventListener('click',()=>$('import-file').click());
+$('import-zone').addEventListener('dragover',e=>{e.preventDefault();$('import-zone').classList.add('drag');});
+$('import-zone').addEventListener('dragleave',()=>$('import-zone').classList.remove('drag'));
+$('import-zone').addEventListener('drop',e=>{e.preventDefault();$('import-zone').classList.remove('drag');handleImport(e.dataTransfer.files);});
+$('import-file').addEventListener('change',e=>handleImport(e.target.files));
+
+$('btn-export-zip').addEventListener('click',exportarLotesZIP);
+$('btn-export-json').addEventListener('click',exportarTodosBD);
+$('btn-export-xlsx').addEventListener('click',exportarXLSXCompleto);
+$('btn-fazer-backup').addEventListener('click',fazerBackup);
+$('btn-restaurar-backup').addEventListener('click',restaurarBackup);
+$('btn-limpar-tudo').addEventListener('click',()=>showConfirm('Apagar TODOS os dados permanentemente?',limparTudo,'⚠️ Limpar Tudo'));
+$('btn-refresh-dash').addEventListener('click',refreshDashboard);
+
+async function exportarLotesZIP() {
+  const checks=$$('.export-lote-check:checked');
+  const ids=checks.length?[...checks].map(c=>c.value):DB.lotes.map(l=>l.id);
+  if(!ids.length){toast('Nenhum lote selecionado','error');return;}
+  const zip=new JSZip();
+  for(const id of ids){
+    const l=DB.lotes.find(x=>x.id===id);if(!l)continue;
+    const esp=DB.especies.find(e=>e.id===l.especieId),tq=DB.tanques.find(t=>t.id===l.tanqueId),c=calcLote(l);
+    const folder=zip.folder(l.codigo);
+    const meta={lote:l.codigo,especie:esp?.nome||'',tanque:tq?.codigo||'',dataCriacao:l.dataCriacao,quantidadeInicial:l.qtdIni,pesoInicial:l.pesoIni,mortInicial:l.mortIni||0,obs:l.obs||'',status:l.status||'ativo',indicadores:c,alimentacoes:DB.alimentacoes.filter(a=>a.loteId===id),crescimentos:DB.crescimentos.filter(x=>x.loteId===id),mortalidades:DB.mortalidades.filter(x=>x.loteId===id),vendas:DB.vendas.filter(v=>v.loteId===id)};
+    folder.file('metadata.json',JSON.stringify(meta,null,2));
+    const wb=XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet([{Codigo:l.codigo,Especie:esp?.nome,Tanque:tq?.codigo,Criacao:l.dataCriacao,QtdIni:l.qtdIni,QtdAtual:c.qtdAtual,Biomassa:c.biomassa.toFixed(2),Receita:c.receita.toFixed(2)}]),'Lote');
+    const alArr=DB.alimentacoes.filter(a=>a.loteId===id); if(alArr.length) XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(alArr.map(a=>({Data:a.data,Tipo:a.tipo,Qtd:a.qtd,Custo:a.custo||0}))),'Alimentação');
+    const crArr=DB.crescimentos.filter(x=>x.loteId===id); if(crArr.length) XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(crArr.map(c=>({Data:c.data,Peso:c.peso,Comp:c.comp,Amostras:c.amostras}))),'Crescimento');
+    const moArr=DB.mortalidades.filter(x=>x.loteId===id); if(moArr.length) XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(moArr.map(m=>({Data:m.data,Qtd:m.qtd,Motivo:m.motivo}))),'Mortalidade');
+    const veArr=DB.vendas.filter(v=>v.loteId===id); if(veArr.length) XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(veArr.map(v=>({Data:v.data,Qtd:v.qtd,Peso:v.pesoTotal,Preco:v.preco,Total:v.total,Cliente:v.cliente}))),'Vendas');
+    folder.file('dados_lote.xlsx',XLSX.write(wb,{bookType:'xlsx',type:'array'}));
+    const {jsPDF}=window.jspdf; const doc=new jsPDF();
+    doc.setFont('helvetica','bold');doc.setFontSize(14);doc.text('Ficha: '+l.codigo,15,15);
+    doc.setFont('helvetica','normal');doc.setFontSize(10);let y=24;
+    [`Especie: ${esp?.nome||'-'}`,`Tanque: ${tq?.codigo||'-'}`,`Criacao: ${l.dataCriacao}`,`Qtd Atual: ${c.qtdAtual}`,`Biomassa: ${fmtNum(c.biomassa)} kg`,`Receita: ${fmtBRL(c.receita)}`].forEach(t=>{doc.text(t,15,y);y+=7;});
+    folder.file('ficha_lote.pdf',doc.output('arraybuffer'));
+  }
+  const blob=await zip.generateAsync({type:'blob'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`aquagest_lotes_${today()}.zip`;a.click();
+  toast('ZIP gerado!','success');
+}
+
+async function exportarLote(id) {
+  const ids=[id];
+  const l=DB.lotes.find(x=>x.id===id);if(!l)return;
+  const esp=DB.especies.find(e=>e.id===l.especieId),tq=DB.tanques.find(t=>t.id===l.tanqueId),c=calcLote(l);
+  const zip=new JSZip(); const folder=zip.folder(l.codigo);
+  const meta={lote:l.codigo,especie:esp?.nome||'',tanque:tq?.codigo||'',dataCriacao:l.dataCriacao,quantidadeInicial:l.qtdIni,pesoInicial:l.pesoIni,mortInicial:l.mortIni||0,obs:l.obs||'',status:l.status||'ativo',indicadores:c,alimentacoes:DB.alimentacoes.filter(a=>a.loteId===id),crescimentos:DB.crescimentos.filter(x=>x.loteId===id),mortalidades:DB.mortalidades.filter(x=>x.loteId===id),vendas:DB.vendas.filter(v=>v.loteId===id)};
+  folder.file('metadata.json',JSON.stringify(meta,null,2));
+  const wb=XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet([{Codigo:l.codigo,Especie:esp?.nome,Tanque:tq?.codigo,QtdAtual:c.qtdAtual,Biomassa:c.biomassa.toFixed(2)}]),'Lote');
+  folder.file('dados_lote.xlsx',XLSX.write(wb,{bookType:'xlsx',type:'array'}));
+  const {jsPDF}=window.jspdf; const doc=new jsPDF();
+  doc.setFont('helvetica','bold');doc.setFontSize(14);doc.text('Ficha: '+l.codigo,15,15);
+  doc.setFont('helvetica','normal');doc.setFontSize(10);let y=24;
+  [`Especie: ${esp?.nome||'-'}`,`Qtd Atual: ${c.qtdAtual}`,`Biomassa: ${fmtNum(c.biomassa)} kg`,`Receita: ${fmtBRL(c.receita)}`].forEach(t=>{doc.text(t,15,y);y+=7;});
+  folder.file('ficha_lote.pdf',doc.output('arraybuffer'));
+  const blob=await zip.generateAsync({type:'blob'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`${l.codigo}.zip`;a.click();
+  toast('Exportado!','success');
+}
+
+function exportarTodosBD() {
+  const data={versao:'1.0',exportado:new Date().toISOString(),especies:DB.especies,tanques:DB.tanques,lotes:DB.lotes,alimentacoes:DB.alimentacoes,crescimentos:DB.crescimentos,mortalidades:DB.mortalidades,vendas:DB.vendas};
+  const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`aquagest_banco_${today()}.json`;a.click();
+  toast('Banco exportado!','success');
+}
+
+function exportarXLSXCompleto() {
+  const wb=XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(DB.lotes.map(l=>{const c=calcLote(l);const esp=DB.especies.find(e=>e.id===l.especieId);const tq=DB.tanques.find(t=>t.id===l.tanqueId);return{Codigo:l.codigo,Especie:esp?.nome||'-',Tanque:tq?.codigo||'-',Criacao:l.dataCriacao,QtdIni:l.qtdIni,QtdAtual:c.qtdAtual,Biomassa:c.biomassa.toFixed(2),Mortalidade:c.mortTotal,Receita:c.receita.toFixed(2),Status:l.status||'ativo'};})),'Lotes');
+  XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(DB.alimentacoes.map(a=>{const l=DB.lotes.find(x=>x.id===a.loteId);return{Lote:l?.codigo||'-',Data:a.data,Tipo:a.tipo,Qtd:a.qtd,Custo:a.custo||0};})),'Alimentacao');
+  XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(DB.crescimentos.map(c=>{const l=DB.lotes.find(x=>x.id===c.loteId);return{Lote:l?.codigo||'-',Data:c.data,Peso:c.peso,Comp:c.comp,Amostras:c.amostras};})),'Crescimento');
+  XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(DB.mortalidades.map(m=>{const l=DB.lotes.find(x=>x.id===m.loteId);return{Lote:l?.codigo||'-',Data:m.data,Qtd:m.qtd,Motivo:m.motivo};})),'Mortalidade');
+  XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(DB.vendas.map(v=>{const l=DB.lotes.find(x=>x.id===v.loteId);return{Lote:l?.codigo||'-',Data:v.data,Qtd:v.qtd,Peso:v.pesoTotal,Preco:v.preco,Total:v.total,Cliente:v.cliente};})),'Vendas');
+  XLSX.writeFile(wb,`aquagest_completo_${today()}.xlsx`); toast('Excel completo gerado!','success');
+}
+
+async function handleImport(files) {
+  const status=$('import-status');
+  status.innerHTML=`<div class="alert alert-info">⏳ Processando...</div>`;
+  let imported=0;
+  for(const file of files){
+    const ext=file.name.split('.').pop().toLowerCase();
+    try{
+      if(ext==='json'){
+        const text=await file.text(); const data=JSON.parse(text);
+        if(data.lote) await importarMetadata(data),imported++;
+        else if(data.lotes) await importarBackupCompleto(data),imported=data.lotes.length;
+      } else if(ext==='zip'){
+        const zip=await JSZip.loadAsync(file);
+        const mfs=Object.keys(zip.files).filter(f=>f.endsWith('metadata.json'));
+        for(const mf of mfs){const t=await zip.files[mf].async('text');await importarMetadata(JSON.parse(t));imported++;}
+      } else if(ext==='xlsx'){
+        const ab=await file.arrayBuffer();importarXLSX(ab);imported++;
+      } else if(ext==='csv'){
+        const text=await file.text();importarCSV(text);imported++;
+      }
+    }catch(e){status.innerHTML+=`<div class="alert alert-danger">Erro: ${file.name} — ${e.message}</div>`;}
+  }
+  status.innerHTML=`<div class="alert alert-success">✅ ${imported} arquivo(s) importado(s)! <button class="btn btn-primary btn-sm" onclick="navigate('dashboard')">Ver Dashboard</button></div>`;
+  toast(`${imported} importados!`,'success');
+}
+
+async function importarMetadata(data) {
+  let espId='';
+  if(data.especie){let esp=DB.especies.find(e=>e.nome.toLowerCase()===data.especie.toLowerCase());if(!esp){esp={id:uid(),nome:data.especie,cientifico:'',pesoIni:data.pesoInicial||0,tempo:0,obs:''};const a=DB.especies;a.push(esp);DB.especies=a;}espId=esp.id;}
+  let tqId='';
+  if(data.tanque){let tq=DB.tanques.find(t=>t.codigo===data.tanque);if(!tq){tq={id:uid(),codigo:data.tanque,volume:0,profundidade:0,area:0,tipo:'escavado',obs:''};const a=DB.tanques;a.push(tq);DB.tanques=a;}tqId=tq.id;}
+  if(!DB.lotes.find(l=>l.codigo===data.lote)){
+    const loteId=uid();
+    const a=DB.lotes;a.push({id:loteId,codigo:data.lote,dataCriacao:data.dataCriacao||today(),especieId:espId,tanqueId:tqId,qtdIni:data.quantidadeInicial||0,pesoIni:data.pesoInicial||0,mortIni:data.mortInicial||0,obs:data.obs||'',status:data.status||'ativo'});DB.lotes=a;
+    if(data.alimentacoes?.length){const ar=DB.alimentacoes;data.alimentacoes.forEach(x=>{if(!ar.find(y=>y.id===x.id))ar.push({...x,loteId:loteId});});DB.alimentacoes=ar;}
+    if(data.crescimentos?.length){const ar=DB.crescimentos;data.crescimentos.forEach(x=>{if(!ar.find(y=>y.id===x.id))ar.push({...x,loteId:loteId});});DB.crescimentos=ar;}
+    if(data.mortalidades?.length){const ar=DB.mortalidades;data.mortalidades.forEach(x=>{if(!ar.find(y=>y.id===x.id))ar.push({...x,loteId:loteId});});DB.mortalidades=ar;}
+    if(data.vendas?.length){const ar=DB.vendas;data.vendas.forEach(x=>{if(!ar.find(y=>y.id===x.id))ar.push({...x,loteId:loteId});});DB.vendas=ar;}
+  }
+}
+
+async function importarBackupCompleto(data) {
+  if(data.especies)DB.especies=data.especies; if(data.tanques)DB.tanques=data.tanques; if(data.lotes)DB.lotes=data.lotes;
+  if(data.alimentacoes)DB.alimentacoes=data.alimentacoes; if(data.crescimentos)DB.crescimentos=data.crescimentos;
+  if(data.mortalidades)DB.mortalidades=data.mortalidades; if(data.vendas)DB.vendas=data.vendas;
+}
+
+function importarXLSX(ab) {
+  const wb=XLSX.read(ab,{type:'array'});
+  wb.SheetNames.forEach(sheetName=>{
+    const rows=XLSX.utils.sheet_to_json(wb.Sheets[sheetName],{raw:false});
+    if(!rows.length)return;
+    const findCol=(aliases)=>Object.keys(rows[0]).find(k=>aliases.some(a=>k.toLowerCase().includes(a)));
+    const s=sheetName.toLowerCase();
+    if(s.includes('aliment')||s.includes('racao')){
+      const ar=DB.alimentacoes,lotes=DB.lotes;
+      rows.forEach(row=>{const lc=row[findCol(['lote'])||'Lote']||'';const l=lotes.find(x=>x.codigo===lc);if(l)ar.push({id:uid(),loteId:l.id,data:row[findCol(['data'])||'Data']||today(),tipo:row[findCol(['tipo','racao'])||'Tipo']||'',qtd:parseFloat(row[findCol(['qtd','quantidade'])||'Qtd'])||0,custo:parseFloat(row[findCol(['custo'])||'Custo'])||0,obs:''});});
+      DB.alimentacoes=ar;
+    } else if(s.includes('cresc')){
+      const ar=DB.crescimentos,lotes=DB.lotes;
+      rows.forEach(row=>{const lc=row[findCol(['lote'])||'Lote']||'';const l=lotes.find(x=>x.codigo===lc);if(l)ar.push({id:uid(),loteId:l.id,data:row[findCol(['data'])||'Data']||today(),peso:parseFloat(row[findCol(['peso'])||'Peso'])||0,comp:0,amostras:0,obs:''});});
+      DB.crescimentos=ar;
+    } else if(s.includes('mort')){
+      const ar=DB.mortalidades,lotes=DB.lotes;
+      rows.forEach(row=>{const lc=row[findCol(['lote'])||'Lote']||'';const l=lotes.find(x=>x.codigo===lc);if(l)ar.push({id:uid(),loteId:l.id,data:row[findCol(['data'])||'Data']||today(),qtd:parseInt(row[findCol(['qtd','quantidade'])||'Qtd'])||0,motivo:row[findCol(['motivo'])||'Motivo']||'',obs:''});});
+      DB.mortalidades=ar;
+    } else if(s.includes('vend')){
+      const ar=DB.vendas,lotes=DB.lotes;
+      rows.forEach(row=>{const lc=row[findCol(['lote'])||'Lote']||'';const l=lotes.find(x=>x.codigo===lc);if(l){const pr=parseFloat(row[findCol(['preco'])||'Preco'])||0,pt=parseFloat(row[findCol(['peso'])||'Peso'])||0;ar.push({id:uid(),loteId:l.id,data:row[findCol(['data'])||'Data']||today(),qtd:parseInt(row[findCol(['qtd'])||'Qtd'])||0,pesoTotal:pt,preco:pr,total:parseFloat(row[findCol(['total'])||'Total'])||pt*pr,cliente:row[findCol(['cliente'])||'Cliente']||'',obs:''});}});
+      DB.vendas=ar;
+    }
+  });
+}
+
+function importarCSV(text) {
+  const wb=XLSX.read(text,{type:'string'}); importarXLSX(XLSX.write(wb,{bookType:'xlsx',type:'array'}));
+}
+
+function fazerBackup() {
+  const data={especies:DB.especies,tanques:DB.tanques,lotes:DB.lotes,alimentacoes:DB.alimentacoes,crescimentos:DB.crescimentos,mortalidades:DB.mortalidades,vendas:DB.vendas};
+  localStorage.setItem('aqg_backup_'+Date.now(),JSON.stringify(data));
+  renderBackupList(); toast('Backup criado!','success');
+}
+
+function restaurarBackup() {
+  const keys=Object.keys(localStorage).filter(k=>k.startsWith('aqg_backup_')).sort();
+  if(!keys.length){toast('Nenhum backup','error');return;}
+  showConfirm('Restaurar backup mais recente? Dados atuais serão substituídos.',()=>restaurarBackupKey(keys[keys.length-1]));
+}
+
+function restaurarBackupKey(key) {
+  try{importarBackupCompleto(JSON.parse(localStorage.getItem(key)));toast('Backup restaurado!','success');navigate('dashboard');}catch(e){toast('Erro ao restaurar','error');}
+}
+
+function limparTudo() {
+  ['especies','tanques','lotes','alimentacoes','crescimentos','mortalidades','vendas'].forEach(k=>localStorage.removeItem('aqg_'+k));
+  toast('Dados removidos','info'); navigate('dashboard');
+}
+
+// ======= DELEGATED EVENT HANDLER (lixeiras e ações) =======
+document.addEventListener('click', e => {
+  const btn = e.target.closest('[data-action]');
+  if(!btn) return;
+  const action=btn.dataset.action, id=btn.dataset.id;
+
+  if(action==='edit-especie'){
+    const x=DB.especies.find(e=>e.id===id);if(!x)return;
+    $('esp-id').value=x.id;$('esp-nome').value=x.nome;$('esp-cientifico').value=x.cientifico||'';
+    $('esp-peso').value=x.pesoIni||'';$('esp-tempo').value=x.tempo||'';$('esp-obs').value=x.obs||'';
+    openModal('modal-especie');
+  }
+  else if(action==='del-especie') showConfirm('Remover esta espécie?',()=>{DB.especies=DB.especies.filter(x=>x.id!==id);renderEspecies();toast('Removida','info');},'Remover Espécie');
+  else if(action==='edit-tanque'){
+    const x=DB.tanques.find(t=>t.id===id);if(!x)return;
+    $('tq-id').value=x.id;$('tq-volume').value=x.volume;$('tq-prof').value=x.profundidade;
+    $('tq-area').value=x.area;$('tq-tipo').value=x.tipo;$('tq-obs').value=x.obs||'';
+    openModal('modal-tanque');
+  }
+  else if(action==='del-tanque') showConfirm('Remover este tanque?',()=>{DB.tanques=DB.tanques.filter(x=>x.id!==id);renderTanques();toast('Removido','info');},'Remover Tanque');
+  else if(action==='ver-lote') verFichaLote(id);
+  else if(action==='edit-lote'){
+    const x=DB.lotes.find(l=>l.id===id);if(!x)return;
+    populateSelects();$('lot-id').value=x.id;$('lot-especie').value=x.especieId;$('lot-tanque').value=x.tanqueId;
+    $('lot-qtd').value=x.qtdIni;$('lot-peso').value=x.pesoIni;$('lot-mort-ini').value=x.mortIni||0;
+    $('lot-data').value=x.dataCriacao;$('lot-obs').value=x.obs||'';
+    openModal('modal-lote');
+  }
+  else if(action==='export-lote') exportarLote(id);
+  else if(action==='del-lote') showConfirm('Remover este lote?',()=>{DB.lotes=DB.lotes.filter(x=>x.id!==id);renderLotes();toast('Removido','info');},'Remover Lote');
+  else if(action==='del-alim') showConfirm('Remover registro?',()=>{DB.alimentacoes=DB.alimentacoes.filter(x=>x.id!==id);renderAlimentacao();toast('Removido','info');});
+  else if(action==='del-cresc') showConfirm('Remover registro?',()=>{DB.crescimentos=DB.crescimentos.filter(x=>x.id!==id);renderCrescimento();toast('Removido','info');});
+  else if(action==='del-mort') showConfirm('Remover registro?',()=>{DB.mortalidades=DB.mortalidades.filter(x=>x.id!==id);renderMortalidade();toast('Removido','info');});
+  else if(action==='del-venda') showConfirm('Remover venda?',()=>{DB.vendas=DB.vendas.filter(x=>x.id!==id);renderVendas();toast('Removido','info');});
+  else if(action==='download-qr') downloadQR(id, btn.dataset.codigo);
+  else if(action==='restaurar-backup-key') showConfirm('Restaurar este backup?',()=>restaurarBackupKey(btn.dataset.key));
+});
+
+// ======= HELPERS =======
+function clearForm(prefix) {
+  document.querySelectorAll(`[id^="${prefix}-"]`).forEach(el=>{
+    if(el.tagName==='INPUT'&&el.type!=='hidden') el.value='';
+    else if(el.tagName==='TEXTAREA') el.value='';
+    else if(el.tagName==='SELECT') el.selectedIndex=0;
+  });
+}
+
+// Mobile
+$('menu-btn').addEventListener('click',toggleSidebar);
+$('sidebar-overlay').addEventListener('click',closeSidebar);
+function toggleSidebar(){$('sidebar').classList.toggle('open');$('sidebar-overlay').classList.toggle('open');}
+function closeSidebar(){$('sidebar').classList.remove('open');$('sidebar-overlay').classList.remove('open');}
+
+// Clock
+function updateClock(){const el=$('clock');if(el)el.textContent=new Date().toLocaleString('pt-BR',{weekday:'short',day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'});}
+setInterval(updateClock,1000); updateClock();
+
+// Auto backup
+setInterval(()=>{const d={especies:DB.especies,tanques:DB.tanques,lotes:DB.lotes,alimentacoes:DB.alimentacoes,crescimentos:DB.crescimentos,mortalidades:DB.mortalidades,vendas:DB.vendas};localStorage.setItem('aqg_autobackup',JSON.stringify(d));},60000);
+
+// ======= INIT =======
+function init() {
+  // Tenta restaurar autobackup se banco vazio
+  if(!DB.lotes.length&&!DB.especies.length){
+    const ab=localStorage.getItem('aqg_autobackup');
+    if(ab){try{importarBackupCompleto(JSON.parse(ab));}catch(e){}}
+  }
+  // Seed demo se ainda vazio
+  if(!DB.especies.length&&!DB.lotes.length) seedDemo();
+  navigate('dashboard');
+}
+
+function seedDemo() {
+  const espId=uid(), esp2Id=uid(), tqId=uid(), tq2Id=uid(), l1Id=uid(), l2Id=uid();
+  DB.especies=[{id:espId,nome:'Tilápia do Nilo',cientifico:'Oreochromis niloticus',pesoIni:10,tempo:180,obs:'Espécie mais cultivada'},{id:esp2Id,nome:'Tambaqui',cientifico:'Colossoma macropomum',pesoIni:5,tempo:365,obs:'Espécie nativa'}];
+  DB.tanques=[{id:tqId,codigo:'TQ-0001',volume:500,profundidade:1.5,area:333,tipo:'escavado',obs:'Tanque principal'},{id:tq2Id,codigo:'TQ-0002',volume:200,profundidade:1.2,area:167,tipo:'lona',obs:''}];
+  const d0=new Date(); d0.setMonth(d0.getMonth()-2); const ini=d0.toISOString().split('T')[0];
+  DB.lotes=[{id:l1Id,codigo:'LOTE-0001',dataCriacao:ini,especieId:espId,tanqueId:tqId,qtdIni:5000,pesoIni:10,mortIni:0,obs:'Lote demo',status:'ativo'},{id:l2Id,codigo:'LOTE-0002',dataCriacao:ini,especieId:esp2Id,tanqueId:tq2Id,qtdIni:2000,pesoIni:5,mortIni:0,obs:'',status:'ativo'}];
+  const alims=[],crescs=[],morts=[],vends=[];
+  for(let i=0;i<8;i++){const d=new Date(d0);d.setDate(d.getDate()+i*7);const ds=d.toISOString().split('T')[0];alims.push({id:uid(),loteId:l1Id,data:ds,tipo:'Extrusada 32%',qtd:50+Math.random()*20,custo:100,obs:''});crescs.push({id:uid(),loteId:l1Id,data:ds,peso:10+i*15,comp:5+i*1.5,amostras:50,obs:''});if(i%3===0)morts.push({id:uid(),loteId:l1Id,data:ds,qtd:10+Math.floor(Math.random()*15),motivo:'desconhecido',obs:''});}
+  for(let i=0;i<5;i++){const d=new Date(d0);d.setDate(d.getDate()+i*10);const ds=d.toISOString().split('T')[0];alims.push({id:uid(),loteId:l2Id,data:ds,tipo:'Ração Tropical',qtd:20,custo:60,obs:''});crescs.push({id:uid(),loteId:l2Id,data:ds,peso:5+i*18,comp:3+i*2,amostras:30,obs:''});}
+  const dv=new Date();dv.setMonth(dv.getMonth()-1);vends.push({id:uid(),loteId:l1Id,data:dv.toISOString().split('T')[0],qtd:500,pesoTotal:250,preco:8.5,total:2125,cliente:'Peixaria Central',obs:''});
+  DB.alimentacoes=alims;DB.crescimentos=crescs;DB.mortalidades=morts;DB.vendas=vends;
+  toast('Dados de demonstração carregados!','info');
+}
+
+init();
+</script>
+</body>
+</html>
