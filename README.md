@@ -1,6 +1,6 @@
 # AquaGest Pro 🐟
 
-Sistema de gestão para piscicultura desenvolvido para auxiliar produtores no controle, monitoramento e organização das atividades da produção aquícola. Esse projeto pertence ao site autonomize-offgrid.com. Pertencendo a um conjunto de soluções focada em autossuficiencia e produção. Sem necessidade de pagamento.
+Sistema de gestão para piscicultura desenvolvido para auxiliar produtores no controle, monitoramento e organização das atividades da produção aquícola. Esse projeto pertence ao site https://www.autonomize-offgrid.com Pertencendo a um conjunto de soluções focada em autossuficiencia e produção. Sem necessidade de pagamento.
 
 ## 📋 Sobre o Projeto
 
