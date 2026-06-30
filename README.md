@@ -68,3 +68,4 @@ https://lumer26.github.io/aquagestpro/psicultura.html
 ```bash
 git clone https://github.com/lumer26/aquagestpro.git
 ```
+Projeto pessoal de Lucas Carvalho Rocha
